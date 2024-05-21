@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.SecurityMVC.UserInfo.Mapper.UserMapper">
+
+    <select id="FindById" resultType="java.lang.String">
+        SELECT username FROM users WHERE username = #{username}
+    </select>
+
+    <select id="FindByPassword" resultType="java.lang.String">
+        SELECT password FROM users WHERE username = #{username}
+    </select>
+
+    <select id="FindByEnabled" resultType="java.lang.Boolean">
+        SELECT enabled FROM users WHERE username = #{username}
+    </select>
+
+    <select id="FindByEmail" resultType="java.lang.String">
+        SELECT email FROM users WHERE email = #{email}
+    </select>
+
+    <select id="FindByUserDetail" resultType="com.spring.SecurityMVC.UserInfo.Domain.User">
+        SELECT * FROM users WHERE username= #{username};
+    </select>
+
+    <select id="FindByRoles" resultType="java.lang.String">
+        SELECT r.authority
+        FROM users u
+        LEFT OUTER JOIN authorities a ON u.username = a.username
+        LEFT OUTER JOIN roles r ON a.roleid  = r.roleid
+        WHERE u.username= #{username};
+    </select>
+
+    <insert id="insertUser" parameterType="com.spring.SecurityMVC.SignUpInfo.Domain.SignUp">
+        INSERT INTO users (username, password, enabled, email)
+        VALUES (#{username}, #{password}, #{enabled}, #{email});
+    </insert>
+
+    <insert id="insertAuthority" parameterType="com.spring.SecurityMVC.SignUpInfo.Domain.SignUp">
+        INSERT INTO authorities (username, authority)
+        VALUES (#{username}, #{authority});
+    </insert>
+</mapper>

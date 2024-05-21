@@ -1,0 +1,53 @@
+[2024-05-29 10:19:52.006|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:19:52.011|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:21:40.004|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:21:40.006|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:22:13.536|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:22:13.537|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:24:37.797|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:24:37.798|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:25:47.742|WARN |http-nio-8080-exec-3|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:26:07.818|WARN |http-nio-8080-exec-6|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:27:40.424|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:27:40.426|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:27:44.385|WARN |http-nio-8080-exec-2|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:28:22.045|WARN |http-nio-8080-exec-3|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:29:17.297|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:29:17.298|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:29:21.052|WARN |http-nio-8080-exec-2|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:30:16.649|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:30:16.650|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:30:20.246|WARN |http-nio-8080-exec-1|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:35:36.633|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:35:36.635|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:35:41.677|WARN |http-nio-8080-exec-2|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:36:46.534|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:36:46.535|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:36:52.677|WARN |http-nio-8080-exec-2|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:37:55.184|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:37:55.186|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:37:58.830|WARN |http-nio-8080-exec-1|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:38:10.980|WARN |http-nio-8080-exec-4|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:38:48.043|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:38:48.045|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:39:06.413|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:39:06.414|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:39:10.460|WARN |http-nio-8080-exec-1|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:39:23.064|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:39:23.065|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:39:27.102|WARN |http-nio-8080-exec-1|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:39:57.345|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:39:57.346|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:40:01.531|WARN |http-nio-8080-exec-1|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:41:01.544|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:41:01.547|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:41:06.656|WARN |http-nio-8080-exec-2|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: null with exception: User is not authenticated
+[2024-05-29 10:43:09.053|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:43:09.055|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:43:23.437|WARN |http-nio-8080-exec-4|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:19]	Authentication failed for user: soong2482 with exception: User does not have SUPER_ADMIN privileges
+[2024-05-29 10:47:37.368|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:47:37.369|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 10:49:42.518|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 10:49:42.520|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 12:38:35.125|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 12:38:35.126|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
