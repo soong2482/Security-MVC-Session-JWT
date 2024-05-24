@@ -18,6 +18,6 @@ public class CustomFailedHandler implements AuthenticationFailureHandler {
         if (session != null) {
             session.invalidate();
         }
-
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }
