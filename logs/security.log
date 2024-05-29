@@ -49,3 +49,5 @@
 [2024-05-29 10:47:37.369|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
 [2024-05-29 10:49:42.518|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
 [2024-05-29 10:49:42.520|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-05-29 12:38:35.125|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-05-29 12:38:35.126|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
