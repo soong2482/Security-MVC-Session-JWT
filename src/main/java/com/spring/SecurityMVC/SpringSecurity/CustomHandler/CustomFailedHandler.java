@@ -1,6 +1,5 @@
 package com.spring.SecurityMVC.SpringSecurity.CustomHandler;
 
-import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomAuthenticationFilter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

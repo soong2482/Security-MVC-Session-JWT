@@ -19,12 +19,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
+public class CustomAdminAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private final CustomSuccessHandler successHandler;
     private final CustomFailedHandler failureHandler;
 
-    public CustomAuthenticationFilter(CustomSuccessHandler successHandler, CustomFailedHandler failureHandler) {
+    public CustomAdminAuthenticationFilter(CustomSuccessHandler successHandler, CustomFailedHandler failureHandler) {
         super(new AntPathRequestMatcher("/Security/Admin/**"));
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
@@ -36,7 +36,6 @@ public class CustomAuthenticationFilter extends AbstractAuthenticationProcessing
         if (session == null || session.getAttribute("username") == null) {
             throw new AuthenticationException("User is not authenticated") {};
         }
-
         List<?> authoritiesObj = (List<?>) session.getAttribute("roles");
         if (authoritiesObj == null) {
             throw new AuthenticationException("No roles found in session") {};
@@ -55,6 +54,7 @@ public class CustomAuthenticationFilter extends AbstractAuthenticationProcessing
 
         boolean isAdmin = false;
         for (GrantedAuthority authority : authorities) {
+
             if ("ROLE_ADMIN".equals(authority.getAuthority())) {
                 isAdmin = true;
                 break;

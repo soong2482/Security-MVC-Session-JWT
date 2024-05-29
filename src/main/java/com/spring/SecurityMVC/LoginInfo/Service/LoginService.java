@@ -12,12 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
 @Service
 public class LoginService {
@@ -30,7 +28,7 @@ public class LoginService {
         this.userMapper = userMapper;
     }
 
-    public ResponseEntity<Void> Login(LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
+    public ResponseEntity<Void> login(LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
         if (loginRequest == null) {
             HttpSession session = request.getSession(false);
             if (session != null && session.getAttribute("username") != null) {
@@ -49,9 +47,9 @@ public class LoginService {
                 HttpSession session = request.getSession(true);
                 session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
                 session.setAttribute("username", loginRequest.getUsername());
-                List<GrantedAuthority> authorities = (List<GrantedAuthority>) authenticationResponse.getAuthorities();
+                Collection<? extends GrantedAuthority> authorities = authenticationResponse.getAuthorities();
                 session.setAttribute("roles", authorities);
-                session.setMaxInactiveInterval(600); // 10 minutes
+                session.setMaxInactiveInterval(600);
                 return ResponseEntity.ok().build();
             } catch (Exception ex) {
                 throw new CustomExceptions.AuthenticationFailedException("Authentication failed: " + ex.getMessage());
@@ -59,7 +57,7 @@ public class LoginService {
         }
     }
 
-    public ResponseEntity<Void> Logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
