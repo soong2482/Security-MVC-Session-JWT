@@ -1,20 +1,23 @@
-package com.spring.SecurityMVC.LoginInfo.Service;
+package com.spring.SecurityMVC.UserInfo.Service;
 
-import com.spring.SecurityMVC.LoginInfo.Domain.User;
-import com.spring.SecurityMVC.LoginInfo.Mapper.UserMapper;
+import com.spring.SecurityMVC.UserInfo.Domain.User;
+import com.spring.SecurityMVC.UserInfo.Mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Service
 public class UserDetailsService {
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserDetailsService(UserMapper userMapper) {
+    public UserDetailsService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public boolean findById(String username) {
@@ -36,7 +39,7 @@ public class UserDetailsService {
         try {
             Optional<String> PasswordOpt = userMapper.FindByPassword(username);
             if (PasswordOpt.isPresent()) {
-                if (PasswordOpt.get().equals(password)) {
+                if (passwordEncoder.matches(password,PasswordOpt.get())) {
                     return true;
                 } else {
                     log.error("Password mismatch for user: {}", username);
@@ -66,12 +69,14 @@ public class UserDetailsService {
         }
         return false;
     }
-    public Optional<User> findByDetailUser(String username, String password) {
+    public Optional<User> findByDetailUser(String username) {
         try {
-            Optional<User> userOpt = userMapper.FindByUserDetail(username, password);
+            Optional<User> userOpt = userMapper.FindByUserDetail(username);
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                user.setAuthorities(user.getAuthority());
+                List<String> roles = userMapper.FindByRoles(username);
+                Optional<List<String>> userRoles = Optional.ofNullable(roles);
+                userRoles.ifPresent(user::setAuthorities);
                 return Optional.of(user);
             } else {
                 log.error("Failed to findByDetailUser:{}: {}", username);

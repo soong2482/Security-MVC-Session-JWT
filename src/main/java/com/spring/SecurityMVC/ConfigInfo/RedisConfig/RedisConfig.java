@@ -1,4 +1,4 @@
-package com.spring.SecurityMVC.RedisConfig;
+package com.spring.SecurityMVC.ConfigInfo.RedisConfig;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

@@ -17,12 +17,10 @@ public class LoginController {
 
     @PostMapping("${Security.backEndPoint}/Login")
     public ResponseEntity<Void> login(@RequestBody(required = false) LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
-        loginService.Login(loginRequest, response, request);
-        return ResponseEntity.ok().build();
+        return loginService.Login(loginRequest, response, request);
     }
     @PostMapping("${Security.backEndPoint}/Logout")
     public ResponseEntity<Void> logout(HttpServletRequest request,HttpServletResponse response) {
-        loginService.Logout(request,response);
-        return ResponseEntity.ok().build();
+        return loginService.Logout(request,response);
     }
 }

@@ -1,7 +1,7 @@
 package com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationProvider;
 
-import com.spring.SecurityMVC.LoginInfo.Domain.User;
-import com.spring.SecurityMVC.LoginInfo.Service.UserDetailsService;
+import com.spring.SecurityMVC.UserInfo.Domain.User;
+import com.spring.SecurityMVC.UserInfo.Service.UserDetailsService;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -17,9 +17,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        if (authentication.getCredentials() == null) {
+            User user = (User) authentication.getPrincipal();
+            return new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
+        }
         String username = authentication.getName();
         String password = authentication.getCredentials().toString();
-
         try {
             if (!userDetailsService.findById(username)) {
                 throw new UsernameNotFoundException("Invalid username");
@@ -30,7 +33,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             if(!userDetailsService.findByEnabled(username)){
                 throw new DisabledException("Invalid Enabled");
             }
-            User user = userDetailsService.findByDetailUser(username,password).get();
+            User user = userDetailsService.findByDetailUser(username).get();
             return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
         } catch (UsernameNotFoundException | BadCredentialsException e) {
             throw new AuthenticationServiceException(e.getMessage(), e);

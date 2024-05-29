@@ -1,4 +1,4 @@
-package com.spring.SecurityMVC.MybatisConfig;
+package com.spring.SecurityMVC.ConfigInfo.MybatisConfig;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSessionFactory;

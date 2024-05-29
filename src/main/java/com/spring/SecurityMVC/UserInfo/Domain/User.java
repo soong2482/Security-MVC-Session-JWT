@@ -1,4 +1,4 @@
-package com.spring.SecurityMVC.LoginInfo.Domain;
+package com.spring.SecurityMVC.UserInfo.Domain;
 
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,14 +14,15 @@ public class User implements Serializable {
 
     private String username;
     private String password;
-    private String authority;
     private List<SimpleGrantedAuthority> authorities = new ArrayList<>();
     private boolean enabled;
-    public List<SimpleGrantedAuthority> setAuthorities(String authority) {
-        if (authority != null && !authority.isEmpty()) {
-            authorities.add(new SimpleGrantedAuthority(authority));
+    private String email;
+    public void setAuthorities(List<String> roles) {
+        for (String role : roles) {
+            if (role != null && !role.isEmpty()) {
+                authorities.add(new SimpleGrantedAuthority(role));
+            }
         }
-        return authorities;
     }
 
 }
