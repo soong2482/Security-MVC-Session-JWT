@@ -39,3 +39,4 @@ out/
 
 # Allow properties files
 !*.properties
+src/main/resources/application.properties
