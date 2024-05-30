@@ -26,13 +26,12 @@ public class UserDetailsService {
                 return true;
             } else {
                 log.error("User not found to FindById:{}", username);
-
+                return false;
             }
         } catch (Exception e) {
             log.error("DB:Error while finding user by id: {}", e.getMessage());
             return false;
         }
-        return false;
     }
 
     public boolean findByPassword(String username, String password) {
@@ -62,6 +61,7 @@ public class UserDetailsService {
                     return true;
                 } else {
                     log.error("User is disabled to FindByEnabled:{}", username);
+                    return false;
                 }
             }
         }catch(Exception e){
@@ -86,5 +86,18 @@ public class UserDetailsService {
             log.error("DB:Error while finding user by Detailed: {}", e.getMessage());
         }
         return Optional.empty();
+    }
+    public boolean findByEmail(String email){
+      try{
+          if (userMapper.FindByEmail(email).isPresent()) {
+              return true;
+          } else {
+              log.error("User not found to FindByEmail:{}", email);
+              return false;
+          }
+      }catch(Exception e){
+          log.error("DB:Error while finding user by Email: {}", e.getMessage());
+      }
+        return false;
     }
 }

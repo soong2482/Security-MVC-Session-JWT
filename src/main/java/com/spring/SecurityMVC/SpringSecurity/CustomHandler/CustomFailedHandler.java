@@ -15,7 +15,7 @@ public class CustomFailedHandler implements AuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         HttpSession session = request.getSession(false);
-        log.warn("Authentication failed for user: {} with exception: {}", session.getAttribute("username"), exception.getMessage());
+        log.warn("Authentication failed for user: {} when accessing {} with exception: {}", session.getAttribute("username"), request.getRequestURI(), exception.getMessage());
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }

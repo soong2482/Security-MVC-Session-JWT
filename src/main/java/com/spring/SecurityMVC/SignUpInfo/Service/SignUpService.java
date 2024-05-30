@@ -4,6 +4,7 @@ import com.spring.SecurityMVC.SignUpInfo.Domain.SignUp;
 import com.spring.SecurityMVC.SpringSecurity.ExceptionHandler.CustomExceptions;
 
 import com.spring.SecurityMVC.UserInfo.Mapper.UserMapper;
+import com.spring.SecurityMVC.UserInfo.Service.UserDetailsService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -15,22 +16,24 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class SignUpService {
 
-    private final UserMapper userMapper;
     private final EmailService emailService;
     private final RedisTemplate<String, String> redisTemplate;
     private final PasswordEncoder passwordEncoder;
-    public SignUpService(UserMapper userMapper, EmailService emailService, RedisTemplate<String, String> redisTemplate, PasswordEncoder passwordEncoder) {
-        this.userMapper = userMapper;
+    private final UserDetailsService userDetailsService;
+    private final UserMapper userMapper;
+    public SignUpService(UserMapper userMapper, EmailService emailService, RedisTemplate<String, String> redisTemplate, PasswordEncoder passwordEncoder, UserDetailsService userDetailsService, UserMapper userMapper1) {
         this.emailService = emailService;
         this.redisTemplate = redisTemplate;
         this.passwordEncoder = passwordEncoder;
+        this.userDetailsService = userDetailsService;
+        this.userMapper = userMapper1;
     }
 
     public ResponseEntity<Void> SignUp(SignUp signUp, HttpServletRequest request, HttpServletResponse response) {
         if (signUp == null) {
             throw new CustomExceptions.InvalidRequestException("SignUp information cannot be null");
         }
-        if (userMapper.FindById(signUp.getUsername()).isPresent()) {
+        if (userDetailsService.findById(signUp.getUsername())) {
             throw new CustomExceptions.UserAlreadyExistsException("Username already exists");
         }
         String storedEmailCode = redisTemplate.opsForValue().get("email_verification:" + signUp.getEmail());
@@ -53,7 +56,7 @@ public class SignUpService {
             throw new CustomExceptions.InvalidRequestException("Email cannot be null or empty");
         }
         String authCode = emailService.generateAuthCode();
-        redisTemplate.opsForValue().set("email_verification:" + email, authCode, 300, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set("email_verification:" + email, authCode, 3000, TimeUnit.SECONDS);
         String subject = "Your Authentication Code";
         String body = "Your authentication code is: " + authCode;
         emailService.sendEmail(email, subject, body);
@@ -76,7 +79,7 @@ public class SignUpService {
         if (username == null || username.trim().isEmpty()) {
             throw new CustomExceptions.InvalidRequestException("Username cannot be null or empty");
         }
-        if (userMapper.FindById(username).isPresent()) {
+        if (userDetailsService.findById(username)) {
             throw new CustomExceptions.UserAlreadyExistsException("Username already exists");
         } else {
             return ResponseEntity.ok().build();
@@ -87,7 +90,7 @@ public class SignUpService {
         if (email == null || email.trim().isEmpty()) {
             throw new CustomExceptions.InvalidRequestException("Email cannot be null or empty");
         }
-        if (userMapper.FindByEmail(email).isPresent()) {
+        if (userDetailsService.findByEmail(email)) {
             throw new CustomExceptions.UserAlreadyExistsException("Email already exists");
         } else {
             return ResponseEntity.ok().build();
