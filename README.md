@@ -27,9 +27,11 @@ https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/Secu
 
 #### 중복검증(아이디중복검증)
 Post요청으로 
+```json
 {
     "UserName" : "soong2482"
 }
+```
 ##### 처리 과정:
 MyBatis를 통해 UserDetails -> userMapper 에서 아이디를 조회하고, Optional<String> 형태로 반환된 데이터를 검증합니다.
 여기서 검증할 데이터는 아이디의 중복 여부입니다. 존재하면 이미 사용 중인 아이디로 간주하고, 존재하지 않으면 사용 가능한 아이디로 처리합니다.
@@ -40,9 +42,11 @@ MyBatis를 통해 UserDetails -> userMapper 에서 아이디를 조회하고, Op
 
 #### 이메일 검증(이메일중복검증)
 Post요청으로 
+```json
 {
     "Email" : "soong3899@naver.com"
 }
+```
 ##### 처리 과정:
 MyBatis를 통해  UserDetails -> userMapper에서 이메일을 조회하고, Optional<String> 형태로 반환된 데이터를 검증합니다.
 여기서 검증할 데이터는 이메일의 중복 여부입니다. 존재하면 이미 사용 중인 이메일로 간주하고, 존재하지 않으면 사용 가능한 이메일로 처리합니다.
@@ -50,9 +54,11 @@ MyBatis를 통해  UserDetails -> userMapper에서 이메일을 조회하고, Op
 
 #### 이메일 검증(이메일 유효코드전송)
 Post요청으로
+```json
 {
     "Email" :"soong3899@naver.com"
 }
+```
 ##### 처리 과정:
 emailService.generateAuthCode() 를 통하여 랜덤코드를 만들고
 redisTemplate.opsForValue().set("email_verification:" + email, authCode, 3000, TimeUnit.SECONDS); redis에 이메일주소(키)와 함께 랜덤코드(밸류)를 저장합니다.
@@ -61,10 +67,12 @@ emailService.sendEmail(email, subject, body); 코드를 통하여 requestbody에
 
 #### 이메일 검증(이메일 유효코드확인)
 Post요청으로
+```json
 {
     "Email" : "soong3899@naver.com",
     "EmailCode": "185942"
 }
+```
 ##### 처리 과정:
 String storedAuthCode = redisTemplate.opsForValue().get("email_verification:" + email); 를 통하여 redis에서 이메일주소(키)에 저장되어 있던  랜덤코드(밸류)를 꺼내옵니다.
 *redis에 있는 저장되어있는 emailcode는 아직 삭제하지 않습니다(회원가입때 한번 더 검증).
@@ -78,16 +86,20 @@ requestbody에 있던 코드와 equals일시 STATUS 200을 반환합니다.
 
 #### 회원가입(최종 검증)
 Post요청으로
+```json
 {
   "username": "soong2482",
   "password": "RandomPass",
   "email": "soong3899@naver.com",
   "emailCode":"666643"
 }
+```
 
 ##### 처리 과정:
 다시 한번더 mybatis를통해 아이디 중복검증을 수행하며 성공시 바로 이후에 이메일 검증을 redis에 저장되어있던 코드를 꺼내와 한번 더 수행합니다.
+
 https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SignUpInfo/Domain/SignUp.java
+
 이후에 SignUp도메인에 setAuthority("ROLE_USER"); setPassword(passwordEncoder.encode(signUp.getPassword()));  signUp.setEnabled(true);
 사용된 이메일 키값과 이메일 코드는 redis에서 폐기 합니다.
 를 통하여 역할, 비밀번호 암호화,접근 허용 체크를 해주고mybatis를 통하여 각각의 DB Table에 저장합니다.
@@ -105,10 +117,12 @@ https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/Secu
 
 #### 로그인
 Post요청으로
+```json
 {
     "username" : "soong2482",
     "password": "RandomPass"
 }
+```
 혹은 로그인이 되어있다면 Session 전송
 
 
@@ -140,10 +154,12 @@ authenticationManager.authenticate(authenticationRequest); 형태로 authenticat
 
 ###### Role권한 관련 인증일시(null Credentials)
 Role권한으로 인한 접근권한api요청시 password가 없는상태로 세션정보가 넘어오기 때문에 먼저 getCredentials을통하여 검증합니다.
+```code
        if (authentication.getCredentials() == null) {
             User user = (User) authentication.getPrincipal();
             return new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
         }
+```
 authentication.getPrincipal()을 통해 사용자 정보를 가져옵니다.
 사용자 정보를 사용해 새로운 UsernamePasswordAuthenticationToken 객체를 생성합니다.
 
@@ -153,8 +169,10 @@ authentication 객체에서 사용자 이름과 자격 증명(비밀번호)을 �
 UserDetailsService를 통해 사용자 정보를 조회합니다.
 UserMapper를 통해 조회된 사용자 정보로 아이디와 비밀번호를 검증하고, 사용자가 활성화(Enabled) 상태인지 확인합니다.
 검증에 성공하면
+```code
   User user = userDetailsService.findByDetailUser(username).get();
             return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
+```
 를 통하여 새로운 UsernamePasswordAuthenticationToken 객체를 생성하여 사용자 정보와 권한을 포함시킵니다.
 
 
@@ -178,6 +196,7 @@ https://github.com/soong2482/SecurityMVC/tree/main/src/main/java/com/spring/Secu
 ##### 처리 과정:
 
 "/Security/Admin/**"로 오는 모든 요청을 가로채서 필터를 통과시키게 합니다.
+```code
  HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("username") == null) {
             throw new AuthenticationException("User is not authenticated") {};
@@ -186,9 +205,10 @@ https://github.com/soong2482/SecurityMVC/tree/main/src/main/java/com/spring/Secu
         if (authoritiesObj == null) {
             throw new AuthenticationException("No roles found in session") {};
         }
+```
 코드를 통하여 먼저 세션의 유효성부터 검증합니다.
 
-
+```code
 List<GrantedAuthority> authorities = new ArrayList<>();
         for (Object authorityObj : authoritiesObj) {
             if (authorityObj instanceof GrantedAuthority) {
@@ -199,29 +219,43 @@ List<GrantedAuthority> authorities = new ArrayList<>();
                 throw new AuthenticationException("Invalid authority type in session") {};
             }
         }
+```
 authorities에 세션에서 가져온 권한 리스트를 반복하여 
-if (authorityObj instanceof GrantedAuthority): 현재 권한 객체가 GrantedAuthority 타입인지 확인하고
+```code
+if (authorityObj instanceof GrantedAuthority):
+```
+현재 권한 객체가 GrantedAuthority 타입인지 확인하고
+```code
 authorities.add((GrantedAuthority) authorityObj): GrantedAuthority 타입인 경우 리스트에 추가합니다
+```
+```code
 else if (authorityObj instanceof String): 현재 권한 객체가 String 타입인지 확인하고.
+```
+```code
 authorities.add(new SimpleGrantedAuthority((String) authorityObj)): String 타입인 경우 SimpleGrantedAuthority 객체로 변환하여 리스트에 추가합니다.
-
+```
 이후 권한리스트를 반복하여 ADMIN의 권한이 있을경우 새로운 UsernamePasswordAuthenticationToken 객체를 생성하여 사용자 이름과 권한을 포함시킵니다.
 세션에서 가져온 데이터임으로 password는 비어있습니다. 이후 authenticate에서 처리됩니다.
 
 filter를 참조하여 
+```code
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         successHandler.onAuthenticationSuccess(request, response, authResult);
         chain.doFilter(request, response);
-    }https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomHandler/CustomSuccessHandler.java
+    }
+```
+https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomHandler/CustomSuccessHandler.java
     인증 성공시 handler를 호출후 필터체인을 계속해서 진행시킵니다.
+   ```code
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         failureHandler.onAuthenticationFailure(request, response, failed);
-    }https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomHandler/CustomFailedHandler.java
-    
+    }
+```
+https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomHandler/CustomFailedHandler.java
   인증성공과 실패시 사용할 핸들러들을 설정합니다.
-
+```code
 @Slf4j
 public class CustomFailedHandler implements AuthenticationFailureHandler {
 
@@ -232,7 +266,8 @@ public class CustomFailedHandler implements AuthenticationFailureHandler {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     } 
 } 접근권한에 맞지 않는 정보에 접근시 그 유저의 아이디와 접근할려했던 URI를 log에남깁니다.
-
+```
+```code
 @Slf4j
 public class CustomSuccessHandler implements AuthenticationSuccessHandler {
     @Override
@@ -240,7 +275,9 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
         log.info("Authentication Success: User {} has been authenticated when accessing {} successfully.", authentication.getName(),request.getRequestURI());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-} 인증성공시 SecurityContext에 저장합니다. 그리고 접근한 유저의 아이디와 접근하려하였던 URI를 로그로 남기고 이후의 처리를 이어서 합니다. 
+}
+```
+인증성공시 SecurityContext에 저장합니다. 그리고 접근한 유저의 아이디와 접근하려하였던 URI를 로그로 남기고 이후의 처리를 이어서 합니다. 
 
 
 
