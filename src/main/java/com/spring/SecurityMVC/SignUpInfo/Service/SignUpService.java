@@ -26,12 +26,12 @@ public class SignUpService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public ResponseEntity<Void> SignUp(SignUp signUp, HttpServletRequest request, HttpServletResponse response) {
-        if (signUp == null) {
-            throw new CustomExceptions.InvalidRequestException("SignUp information cannot be null");
-        }
-        if (userMapper.FindById(signUp.getUsername()).isPresent()) {
-            throw new CustomExceptions.UserAlreadyExistsException("Username already exists");
+            public ResponseEntity<Void> SignUp(SignUp signUp, HttpServletRequest request, HttpServletResponse response) {
+                if (signUp == null) {
+                    throw new CustomExceptions.InvalidRequestException("SignUp information cannot be null");
+                }
+                if (userMapper.FindById(signUp.getUsername()).isPresent()) {
+                    throw new CustomExceptions.UserAlreadyExistsException("Username already exists");
         }
         String storedEmailCode = redisTemplate.opsForValue().get("email_verification:" + signUp.getEmail());
         if (signUp.getEmailCode().equals(storedEmailCode)) {

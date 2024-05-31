@@ -2,6 +2,7 @@ package com.spring.SecurityMVC.SpringSecurity;
 
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomAdminAuthenticationFilter;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomSuperAdminAuthenticationFilter;
+import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomUserAuthenticationFilter;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomSuccessHandler;
 import com.spring.SecurityMVC.UserInfo.Service.UserDetailsService;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationProvider.CustomAuthenticationProvider;
@@ -51,6 +52,12 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CustomUserAuthenticationFilter customUserAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
+        CustomUserAuthenticationFilter filter = new CustomUserAuthenticationFilter(customSuccessHandler(), customFailedHandler());
+        filter.setAuthenticationManager(authenticationManager(null, customAuthenticationProvider(null)));
+        return filter;
+    }
+    @Bean
     public CustomAdminAuthenticationFilter customAdminAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
         CustomAdminAuthenticationFilter filter = new CustomAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler());
         filter.setAuthenticationManager(authenticationManager(null, customAuthenticationProvider(null)));
@@ -66,7 +73,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAdminAuthenticationFilter customAdminAuthenticationFilter, CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,CustomUserAuthenticationFilter customUserAuthenticationFilter, CustomAdminAuthenticationFilter customAdminAuthenticationFilter, CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic
@@ -78,7 +85,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .formLogin(formLogin -> formLogin.disable());
-
+        http.addFilterBefore(customUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customSuperAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

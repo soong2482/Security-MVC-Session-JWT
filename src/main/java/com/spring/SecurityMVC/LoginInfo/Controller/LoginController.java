@@ -16,7 +16,7 @@ public class LoginController {
     private final LoginService loginService;
 
     @PostMapping("${Security.backEndPoint}/Login")
-    public ResponseEntity<Void> login(@RequestBody(required = false) LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
+    public ResponseEntity<String> login(@RequestBody(required = false) LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
         return loginService.login(loginRequest, response, request);
     }
     @PostMapping("${Security.backEndPoint}/Logout")
