@@ -8,36 +8,40 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
+    private final RefreshTokenService refreshTokenService;
     @Value("${spring.jwt.key}")
     private String SECRET_KEY;
 
-    public String generateAccessToken(String username, List<String> roles,String sessionid) {
+    public JwtService(RefreshTokenService refreshTokenService) {
+        this.refreshTokenService = refreshTokenService;
+    }
+
+    public String generateAccessToken(String username, List<String> roles,String sessionId) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
-                .claim("SessionId",sessionid)
+                .claim("SessionId",sessionId)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) // 15분 유효
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
-
     public String generateRefreshToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // 7일 유효
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
 
+
     public Boolean validateToken(String token) {
-        return !isTokenExpired(token);//유효시간만 할게아니라 먼저체크한후 만약 시간이 다 끝난거면 refreshtoken으로 다시 재발급해서 accesstoken을 보내줘야함 근데 만약 세션이 만료인경우면 재로그인
+        return !isTokenExpired(token);
     }
 
     public String getUsernameFromToken(String token) {
@@ -65,13 +69,20 @@ public class JwtService {
         return expiration.before(new Date());
     }
 
-    public Boolean validateRefreshToken(String token) {
-        return validateToken(token); // 추가 검증 로직을 포함할 수 있습니다.
+        public Boolean validateRefreshToken(String token,String username) {
+            String RefreshToken = refreshTokenService.getRefreshToken(username);
+            if(token.equals(RefreshToken)) {
+                return validateToken(token);
+            }
+        else{
+            return false;
+        }
     }
 
     public String getUsernameFromRefreshToken(String token) {
         return getUsernameFromToken(token);
     }
+
     public String getSessionIdFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
         return claims.get("SessionId", String.class);

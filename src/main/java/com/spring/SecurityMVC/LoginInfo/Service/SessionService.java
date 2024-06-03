@@ -1,13 +1,13 @@
 package com.spring.SecurityMVC.LoginInfo.Service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -22,6 +22,16 @@ public class SessionService {
         this.redisTemplate = redisTemplate;
     }
 
+    public String createNewSession(HttpServletRequest request, String username, List<String> roles) {
+        HttpSession session = request.getSession(true);
+        session.setMaxInactiveInterval(1800);
+
+        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+        session.setAttribute("username", username);
+        session.setAttribute("roles", roles);
+
+        return session.getId();
+    }
 
     public boolean isSessionValid(String sessionId) {
         if (sessionId != null && !sessionId.isEmpty()) {

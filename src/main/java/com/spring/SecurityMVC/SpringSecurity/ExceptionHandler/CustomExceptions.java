@@ -32,5 +32,11 @@ public class CustomExceptions {
         }
     }
 
+    public static class LogoutFailedException extends RuntimeException {
+        public LogoutFailedException(String message, String cause) {
+            super(message);
+        }
+    }
+
 
 }

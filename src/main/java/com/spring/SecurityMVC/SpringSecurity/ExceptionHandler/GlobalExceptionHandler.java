@@ -36,6 +36,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 
+    @ExceptionHandler(CustomExceptions.LogoutFailedException.class)
+    public ResponseEntity<String> handleLogoutFailedException(CustomExceptions.LogoutFailedException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {

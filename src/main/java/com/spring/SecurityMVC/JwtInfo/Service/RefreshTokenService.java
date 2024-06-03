@@ -1,5 +1,7 @@
 package com.spring.SecurityMVC.JwtInfo.Service;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,26 @@ public class RefreshTokenService {
         String key = "refreshToken:" + username;
         return redisTemplate.opsForValue().get(key);
     }
-
+    public String getRefreshTokenFromCookies(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("Refresh-Token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+    public String getAccessTokenFromCookies(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("Access-Token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
     public void deleteRefreshToken(String username) {
         String key = "refreshToken:" + username;
         redisTemplate.delete(key);
