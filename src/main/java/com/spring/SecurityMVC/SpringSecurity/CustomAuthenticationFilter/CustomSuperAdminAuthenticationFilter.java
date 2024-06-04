@@ -1,12 +1,15 @@
 package com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter;
 
+import com.spring.SecurityMVC.JwtInfo.Service.JwtService;
+import com.spring.SecurityMVC.JwtInfo.Service.RefreshTokenService;
+import com.spring.SecurityMVC.LoginInfo.Service.SessionService;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomFailedHandler;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomSuccessHandler;
+import com.spring.SecurityMVC.SpringSecurity.ExceptionHandler.CustomExceptions;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -23,23 +26,32 @@ public class CustomSuperAdminAuthenticationFilter extends AbstractAuthentication
 
     private final CustomSuccessHandler successHandler;
     private final CustomFailedHandler failureHandler;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
+    private final SessionService sessionService;
 
-    public CustomSuperAdminAuthenticationFilter(CustomSuccessHandler successHandler, CustomFailedHandler failureHandler) {
+    public CustomSuperAdminAuthenticationFilter(CustomSuccessHandler successHandler, CustomFailedHandler failureHandler, RefreshTokenService refreshTokenService, JwtService jwtService, SessionService sessionService) {
         super(new AntPathRequestMatcher("/Security/SuperAdmin/**"));
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
+        this.refreshTokenService = refreshTokenService;
+        this.jwtService = jwtService;
+        this.sessionService = sessionService;
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("username") == null) {
-            throw new AuthenticationException("User is not authenticated") {};
+        String accessToken = refreshTokenService.getAccessTokenFromCookies(request);
+        if(!jwtService.validateToken(accessToken)){
+            throw new AuthenticationException("User is not authenticated(Token is not valid)") {};
         }
-
-        List<?> authoritiesObj = (List<?>) session.getAttribute("roles");
+        List<?> authoritiesObj = (List<?>) jwtService.getRolesFromToken(accessToken);
         if (authoritiesObj == null) {
             throw new AuthenticationException("No roles found in session") {};
+        }
+        String sessionId = jwtService.getSessionIdFromToken(accessToken);
+        if (sessionId == null || !sessionService.isSessionValid(sessionId)) {
+            throw new CustomExceptions.AuthenticationFailedException("User is not authenticated(Session is not valid)");
         }
 
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -66,7 +78,7 @@ public class CustomSuperAdminAuthenticationFilter extends AbstractAuthentication
         }
 
         UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(
-                session.getAttribute("username"),
+                jwtService.getUsernameFromToken(accessToken),
                 null,
                 authorities
         );

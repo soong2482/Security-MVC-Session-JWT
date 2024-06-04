@@ -1,5 +1,8 @@
 package com.spring.SecurityMVC.SpringSecurity;
 
+import com.spring.SecurityMVC.JwtInfo.Service.JwtService;
+import com.spring.SecurityMVC.JwtInfo.Service.RefreshTokenService;
+import com.spring.SecurityMVC.LoginInfo.Service.SessionService;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomAdminAuthenticationFilter;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomSuperAdminAuthenticationFilter;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomUserAuthenticationFilter;
@@ -7,8 +10,10 @@ import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomSuccessHandler;
 import com.spring.SecurityMVC.UserInfo.Service.UserDetailsService;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationProvider.CustomAuthenticationProvider;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomFailedHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -19,10 +24,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final RedisTemplate redisTemplate;
+
+    @Autowired
+    public SecurityConfig(RedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     @Bean
     public CustomAuthenticationProvider customAuthenticationProvider(UserDetailsService userDetailsService) {
@@ -30,7 +41,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration, CustomAuthenticationProvider customAuthenticationProvider) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration, UserDetailsService userDetailsService) throws Exception {
+        CustomAuthenticationProvider customAuthenticationProvider = customAuthenticationProvider(userDetailsService);
         ProviderManager authenticationManager = (ProviderManager) authenticationConfiguration.getAuthenticationManager();
         authenticationManager.getProviders().add(customAuthenticationProvider);
         return authenticationManager;
@@ -53,27 +65,42 @@ public class SecurityConfig {
 
     @Bean
     public CustomUserAuthenticationFilter customUserAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        CustomUserAuthenticationFilter filter = new CustomUserAuthenticationFilter(customSuccessHandler(), customFailedHandler());
-        filter.setAuthenticationManager(authenticationManager(null, customAuthenticationProvider(null)));
-        return filter;
-    }
-    @Bean
-    public CustomAdminAuthenticationFilter customAdminAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        CustomAdminAuthenticationFilter filter = new CustomAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler());
-        filter.setAuthenticationManager(authenticationManager(null, customAuthenticationProvider(null)));
+        CustomUserAuthenticationFilter filter = new CustomUserAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(), jwtService(), sessionService());
+        filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
 
+    @Bean
+    public CustomAdminAuthenticationFilter customAdminAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
+        CustomAdminAuthenticationFilter filter = new CustomAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(), jwtService(), sessionService());
+        filter.setAuthenticationManager(authenticationManager);
+        return filter;
+    }
+
+    @Bean
+    public RefreshTokenService refreshTokenService() {
+        return new RefreshTokenService(redisTemplate);
+    }
+
+    @Bean
+    public SessionService sessionService() {
+        return new SessionService(redisTemplate);
+    }
+
+    @Bean
+    public JwtService jwtService() {
+        return new JwtService(refreshTokenService());
+    }
 
     @Bean
     public CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        CustomSuperAdminAuthenticationFilter filter = new CustomSuperAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler());
-        filter.setAuthenticationManager(authenticationManager(null, customAuthenticationProvider(null)));
+        CustomSuperAdminAuthenticationFilter filter = new CustomSuperAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(), jwtService(), sessionService());
+        filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,CustomUserAuthenticationFilter customUserAuthenticationFilter, CustomAdminAuthenticationFilter customAdminAuthenticationFilter, CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomUserAuthenticationFilter customUserAuthenticationFilter, CustomAdminAuthenticationFilter customAdminAuthenticationFilter, CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic

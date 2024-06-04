@@ -1,4 +1,4 @@
-# SecurityMVC
+# Security Session+JWT
 
 기초적인 Spring Security를 사용한 MVC 프로젝트입니다. 이 프로젝트에서는 회원가입(SignUp), 로그인(Login), 로그아웃(Logout), 그리고 Role 권한에 따른 API 요청을 구현합니다
 
@@ -14,7 +14,8 @@
 - MyBatis
 - Spring Boot Starter Data Redis
 - Spring Session Data Redis
-- Spring Boot Starter Mail
+- Spring Boot Starter Mail 
+- JsonWebToken::jjwt
 ### DB구성(Role의 권한 확장성을 위해 테이블 세분화)
 ![image](https://github.com/soong2482/SecurityMVC/assets/97108130/78fb2277-47c0-416b-83a0-ba960b7efdff)
 
@@ -115,7 +116,7 @@ https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/Secu
 
 https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/LoginInfo/Service/LoginService.java
 
-#### 로그인
+#### 로그인 @Security/Login
 Post요청으로
 ```json
 {
@@ -123,36 +124,42 @@ Post요청으로
     "password": "RandomPass"
 }
 ```
-혹은 로그인이 되어있다면 Session 전송
+
+### 처리 과정:
+
+ -LoginRequest 로그인
+
+1.클라이언트로부터 받은 username과 password를 사용하여 UsernamePasswordAuthenticationToken 객체를 생성합니다.
+
+2.authenticationManager를 사용하여 인증 요청을 처리합니다.
+
+3.인증이 성공하면 SecurityContextHolder에 인증 정보를 저장합니다.
+
+4.HttpSession 객체를 생성하여 세션을 활성화합니다.
+
+5.세션에 SPRING_SECURITY_CONTEXT와 username, roles 정보를 저장합니다.
+
+6.세션의 유효기간을 액세스 토큰의 유효 기간(ACCESS_TOKEN_EXPIRATION)으로 설정합니다(세션은 redis에서 관리합니다).
+
+7.사용자 이름과 역할 정보를 기반으로 액세스 토큰을 생성합니다(여기에 세션 ID가 추가됩니다).
+
+8.사용자 이름을 기반으로 리프레시 토큰을 생성합니다(redis에 사용자 이름 기반으로 저장됩니다).
+
+9.리프레시 토큰과 액세스 토큰을 쿠키로 클라이언트로 setCookie합니다.
 
 
-##### 처리 과정:
-login시 먼저 세션으로 로그인,loginRequest를 통한 로그인인지 확인하여 인증 방법을 나눕니다.
-
--LoginRequest를통한 로그인
-UsernamePasswordAuthenticationToken을 사용해 인증을 시도합니다.
-인증에 성공하면, SecurityContextHolder에 인증 정보를 저장하고, 새로운 세션을 생성합니다.
-세션에 SPRING_SECURITY_CONTEXT, username, roles를 저장하고, 세션 타임아웃을 설정합니다.
-인증에 실패하면 AuthenticationFailedException 예외를 던집니다.
-
--세션을 통한 로그인
-세션에 저장된 username이 있는지 확인하여, 있다면 인증된 것으로 간주하고 200 OK를 반환합니다.
-세션에 username이 없으면 AuthenticationFailedException 예외를 던집니다.
-
-
-
-#### CustomAuthenticationProvider
+## CustomAuthenticationProvider
 https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/SecurityConfig.java
 
 https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomAuthenticationProvider/CustomAuthenticationProvider.java
 
-Custom으로 직접 인증Provider를만들어 사용합니다.
+Custom으로 직접 인증 Provider를 만들어 사용합니다.
 
-##### 처리 과정:
+### 처리 과정:
 SecurityConfig에 Bean으로 AuthenticationManager에 CustomPrivder를 추가해놓은 상태에서
 authenticationManager.authenticate(authenticationRequest); 형태로 authenticate요청이 오면 CustomProvider로넘어가서 인증을 수행하게됩니다.
 
-###### Role권한 관련 인증일시(null Credentials)
+### Role권한 관련 인증일시(null Credentials)
 Role권한으로 인한 접근권한api요청시 password가 없는상태로 세션정보가 넘어오기 때문에 먼저 getCredentials을통하여 검증합니다.
 ```code
        if (authentication.getCredentials() == null) {
@@ -163,7 +170,7 @@ Role권한으로 인한 접근권한api요청시 password가 없는상태로 세
 authentication.getPrincipal()을 통해 사용자 정보를 가져옵니다.
 사용자 정보를 사용해 새로운 UsernamePasswordAuthenticationToken 객체를 생성합니다.
 
-##### 일반 로그인 관련 인증일시
+### 일반 로그인 관련 인증일시
 
 authentication 객체에서 사용자 이름과 자격 증명(비밀번호)을 가져옵니다.
 UserDetailsService를 통해 사용자 정보를 조회합니다.
