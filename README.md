@@ -2,7 +2,16 @@
 
 기초적인 Spring Security를 사용한 MVC 프로젝트입니다. 이 프로젝트에서는 회원가입(SignUp), 로그인(Login), 로그아웃(Logout), 그리고 Role 권한에 따른 API 요청을 구현합니다
 
-## 프로젝트 설정
+## 부가적인 설명
+세션과 JWT의 결합을 하기위해 많은 고민을 하였습니다. 각 기능의 장점을 살리기위하여 저는
+
+이렇게 생각하였습니다. 세션의 서버에서의 안정적인 사용자 관리와 저장, JWT의 무상태 인증 및 보안
+
+을 합하여 보안에 민감한 api의 세션,jwt 이중인증을 구현하였습니다. 그리고 보안에 민감하지
+
+않은 api요청들은 로그인이 유지되고있는 jwt인증만으로 받아올수 있게 하여 성능을 향상시켰습니다.
+
+
 
 ## 1. 환경 설정(BuildGradle)
 - Spring Boot Starter Security
@@ -23,8 +32,8 @@
 
 
 ## 회원가입
-https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SignUpInfo/Service/SignUpService.java 
-https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/UserInfo/Service/UserDetailsService.java
+https://github.com/soong2482/Security-MVC-Session-JWT/blob/Session%2BJWT_SNAPSHOT/src/main/java/com/spring/SecurityMVC/SignUpInfo/Service/SignUpService.java
+https://github.com/soong2482/Security-MVC-Session-JWT/blob/Session%2BJWT_SNAPSHOT/src/main/java/com/spring/SecurityMVC/UserInfo/Service/UserDetailsService.java
 
 #### 중복검증(아이디중복검증)
 Post요청으로 
@@ -99,7 +108,7 @@ Post요청으로
 ##### 처리 과정:
 다시 한번더 mybatis를통해 아이디 중복검증을 수행하며 성공시 바로 이후에 이메일 검증을 redis에 저장되어있던 코드를 꺼내와 한번 더 수행합니다.
 
-https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SignUpInfo/Domain/SignUp.java
+https://github.com/soong2482/Security-MVC-Session-JWT/blob/Session%2BJWT_SNAPSHOT/src/main/java/com/spring/SecurityMVC/SignUpInfo/Domain/SignUp.java
 
 이후에 SignUp도메인에 setAuthority("ROLE_USER"); setPassword(passwordEncoder.encode(signUp.getPassword()));  signUp.setEnabled(true);
 사용된 이메일 키값과 이메일 코드는 redis에서 폐기 합니다.
@@ -114,9 +123,8 @@ https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/Secu
 
 ## 로그인
 
-https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/LoginInfo/Service/LoginService.java
+https://github.com/soong2482/Security-MVC-Session-JWT/blob/Session%2BJWT_SNAPSHOT/src/main/java/com/spring/SecurityMVC/LoginInfo/Service/LoginService.java
 
-#### 로그인 @Security/Login
 Post요청으로
 ```json
 {
@@ -149,14 +157,13 @@ Post요청으로
 
 
 ## CustomAuthenticationProvider
-https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/SecurityConfig.java
+https://github.com/soong2482/Security-MVC-Session-JWT/blob/Session%2BJWT_SNAPSHOT/src/main/java/com/spring/SecurityMVC/SpringSecurity/SecurityConfig.java
 
-https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomAuthenticationProvider/CustomAuthenticationProvider.java
-
+https://github.com/soong2482/Security-MVC-Session-JWT/blob/Session%2BJWT_SNAPSHOT/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomAuthenticationProvider/CustomAuthenticationProvider.java
 Custom으로 직접 인증 Provider를 만들어 사용합니다.
 
 ### 처리 과정:
-SecurityConfig에 Bean으로 AuthenticationManager에 CustomPrivder를 추가해놓은 상태에서
+SecurityConfig에 Bean으로 AuthenticationManager에 CustomProvider를 추가해놓은 상태에서
 authenticationManager.authenticate(authenticationRequest); 형태로 authenticate요청이 오면 CustomProvider로넘어가서 인증을 수행하게됩니다.
 
 ### Role권한 관련 인증일시(null Credentials)
@@ -173,7 +180,7 @@ authentication.getPrincipal()을 통해 사용자 정보를 가져옵니다.
 ### 일반 로그인 관련 인증일시
 
 authentication 객체에서 사용자 이름과 자격 증명(비밀번호)을 가져옵니다.
-UserDetailsService를 통해 사용자 정보를 조회합니다.
+UserDetailsService를 통해 사용자 정보를 조회합니다. 
 UserMapper를 통해 조회된 사용자 정보로 아이디와 비밀번호를 검증하고, 사용자가 활성화(Enabled) 상태인지 확인합니다.
 검증에 성공하면
 ```code
@@ -194,9 +201,8 @@ UserMapper를 통해 조회된 사용자 정보로 아이디와 비밀번호를 
 
 # 로그인 이후 Role에 따른 접근 필터
 
-https://github.com/soong2482/SecurityMVC/tree/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomAuthenticationFilter
-
-현재는 Admin과 SuperAdmin만 구현해 놓은 상태입니다. 확장은 DB에 역할을 추가하고 메서드를 조금만 수정하면 역할을 확장할 수 있습니다.
+https://github.com/soong2482/Security-MVC-Session-JWT/tree/Session%2BJWT_SNAPSHOT/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomAuthenticationFilter
+현재는 Admin과 SuperAdmin,User 만 구현해 놓은 상태입니다. 확장은 DB에 역할을 추가하고 메서드를 조금만 수정하면 역할을 확장할 수 있습니다.
 
 #### CustomAdminAuthenticationFilter extends AbstractAuthenticationProcessingFilter
 #### CustomSuperAdminAuthenticationFilter extends AbstartAuthenticationProcessingFilter
@@ -204,16 +210,20 @@ https://github.com/soong2482/SecurityMVC/tree/main/src/main/java/com/spring/Secu
 
 "/Security/Admin/**"로 오는 모든 요청을 가로채서 필터를 통과시키게 합니다.
 ```code
- HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("username") == null) {
-            throw new AuthenticationException("User is not authenticated") {};
+ String accessToken = refreshTokenService.getAccessTokenFromCookies(request);
+        if(!jwtService.validateToken(accessToken)){
+            throw new AuthenticationException("User is not authenticated(Token is not valid)") {};
         }
-        List<?> authoritiesObj = (List<?>) session.getAttribute("roles");
+        List<?> authoritiesObj = (List<?>) jwtService.getRolesFromToken(accessToken);
         if (authoritiesObj == null) {
             throw new AuthenticationException("No roles found in session") {};
         }
+        String sessionId = jwtService.getSessionIdFromToken(accessToken);
+        if (sessionId == null || !sessionService.isSessionValid(sessionId)) {
+            throw new CustomExceptions.AuthenticationFailedException("User is not authenticated(Session is not valid)");
+        }
 ```
-코드를 통하여 먼저 세션의 유효성부터 검증합니다.
+코드를 통하여 먼저 세션의 유효성과 토큰의 유효성을 검사합니다. +동시에 역할의 유호성도 검사합니다.
 
 ```code
 List<GrantedAuthority> authorities = new ArrayList<>();
@@ -252,7 +262,7 @@ filter를 참조하여
         chain.doFilter(request, response);
     }
 ```
-https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomHandler/CustomSuccessHandler.java
+https://github.com/soong2482/Security-MVC-Session-JWT/blob/Session%2BJWT_SNAPSHOT/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomHandler/CustomSuccessHandler.java
     인증 성공시 handler를 호출후 필터체인을 계속해서 진행시킵니다.
    ```code
     @Override
@@ -260,7 +270,7 @@ https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/Secu
         failureHandler.onAuthenticationFailure(request, response, failed);
     }
 ```
-https://github.com/soong2482/SecurityMVC/blob/main/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomHandler/CustomFailedHandler.java
+https://github.com/soong2482/Security-MVC-Session-JWT/blob/Session%2BJWT_SNAPSHOT/src/main/java/com/spring/SecurityMVC/SpringSecurity/CustomHandler/CustomFailedHandler.java
   인증성공과 실패시 사용할 핸들러들을 설정합니다.
 ```code
 @Slf4j
@@ -339,6 +349,18 @@ public void setAuthorities(List<String> roles) {
 꼭 이 형식을 맞춰서 해야하나 싶었지만 기본적으로 제공하는 사용자 이름과 비밀번호 기반의 인증 메커니즘을 활용하기 위해서 그대로 Custom하지 않고 사용하였습니다. 
 
 이 프로젝트는 Dawon/BackEnd라는 프로젝트를 진행하다가 Security에 대한 지식이 부족한 것 같아서 시작하였습니다.
+
+//JWT 추가 이후 
+ 
+세션과 JWT의 장점들만 꺼내어 어떻게 결합해야하나가 제일 걱정이였습니다.
+
+세션을 이용하여 사용자의 상태를 서버에서 직접적으로 관리할 수 있게 하고
+
+JWT의 무상태 인증을 통하여 역할접근 api가아닌 일반적인 api요청들은 효율성있게 받아오도록 하였습니다/
+
+리프레시 토큰을 이용하여 지속적인 인증을 하게 하였고 토큰이 탈취당하여도 세션을 통하여 관리할수 있다는 장점이 제일 좋다고 생각합니다.
+
+
 
 # +개선할 점
 1.보안인증에서 로그인은 성공하였지만 session으로의 로그인중 검증이 부족하여 고민이 있습니다. 추후에 수정해서 추가하도록 하겠습니다 () 

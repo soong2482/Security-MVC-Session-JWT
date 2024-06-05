@@ -10,7 +10,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -22,6 +21,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CustomUserAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
@@ -43,39 +43,29 @@ public class CustomUserAuthenticationFilter extends AbstractAuthenticationProces
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         String accessToken = refreshTokenService.getAccessTokenFromCookies(request);
-        if(!jwtService.validateToken(accessToken)){
-            throw new AuthenticationException("User is not authenticated(Token is not valid)") {};
-        }
-        List<?> authoritiesObj = (List<?>) jwtService.getRolesFromToken(accessToken);
+        List<String> authoritiesObj =jwtService.getRolesFromToken(accessToken);
         if (authoritiesObj == null) {
             throw new AuthenticationException("No roles found in session") {};
         }
         String sessionId = jwtService.getSessionIdFromToken(accessToken);
         if (sessionId == null || !sessionService.isSessionValid(sessionId)) {
-            throw new CustomExceptions.AuthenticationFailedException("User is not authenticated(Session is not valid)");
+            throw new AuthenticationException("User is not authenticated(Session is not valid)") {};
         }
 
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        for (Object authorityObj : authoritiesObj) {
-            if (authorityObj instanceof GrantedAuthority) {
-                authorities.add((GrantedAuthority) authorityObj);
-            } else if (authorityObj instanceof String) {
-                authorities.add(new SimpleGrantedAuthority((String) authorityObj));
-            } else {
-                throw new AuthenticationException("Invalid authority type in session") {};
-            }
-        }
+        List<SimpleGrantedAuthority> authorities = authoritiesObj.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
 
-        boolean isSuperAdmin = false;
+        boolean isUser = false;
         for (GrantedAuthority authority : authorities) {
             if ("ROLE_USER".equals(authority.getAuthority())) {
-                isSuperAdmin = true;
+                isUser = true;
                 break;
             }
         }
 
-        if (!isSuperAdmin) {
-            throw new AuthenticationException("User does not have SUPER_ADMIN privileges") {};
+        if (!isUser) {
+            throw new AuthenticationException("User does not have USER privileges") {};
         }
 
         UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(

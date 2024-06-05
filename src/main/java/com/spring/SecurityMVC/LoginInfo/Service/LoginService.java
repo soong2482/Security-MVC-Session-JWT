@@ -208,6 +208,7 @@ public class LoginService {
             response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
             response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
+            SecurityContextHolder.clearContext();
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             throw new CustomExceptions.LogoutFailedException("Logout failed {}", username+":"+e);

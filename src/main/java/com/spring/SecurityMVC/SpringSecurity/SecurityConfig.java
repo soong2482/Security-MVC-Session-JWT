@@ -4,6 +4,7 @@ import com.spring.SecurityMVC.JwtInfo.Service.JwtService;
 import com.spring.SecurityMVC.JwtInfo.Service.RefreshTokenService;
 import com.spring.SecurityMVC.LoginInfo.Service.SessionService;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomAdminAuthenticationFilter;
+import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomJWTAuthenticationFilter;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomSuperAdminAuthenticationFilter;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomUserAuthenticationFilter;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomSuccessHandler;
@@ -60,9 +61,8 @@ public class SecurityConfig {
 
     @Bean
     public CustomFailedHandler customFailedHandler() {
-        return new CustomFailedHandler();
+        return new CustomFailedHandler(refreshTokenService(), sessionService());
     }
-
     @Bean
     public CustomUserAuthenticationFilter customUserAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
         CustomUserAuthenticationFilter filter = new CustomUserAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(), jwtService(), sessionService());
@@ -99,6 +99,7 @@ public class SecurityConfig {
         return filter;
     }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomUserAuthenticationFilter customUserAuthenticationFilter, CustomAdminAuthenticationFilter customAdminAuthenticationFilter, CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
         http
@@ -109,9 +110,13 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("/Security/Admin/**").hasRole("ADMIN")
+                        .requestMatchers("/Security/SuperAdmin/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/Security/User/**").hasRole("USER")
                         .anyRequest().permitAll()
                 )
                 .formLogin(formLogin -> formLogin.disable());
+        http.addFilterBefore(new CustomJWTAuthenticationFilter(jwtService(), refreshTokenService(),customFailedHandler(),customSuccessHandler()), UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customSuperAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
