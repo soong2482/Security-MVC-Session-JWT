@@ -130,7 +130,7 @@ public class LoginService {
                 session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
                 session.setAttribute("username", loginRequest.getUsername());
                 session.setAttribute("roles", authorities);
-                session.setMaxInactiveInterval((int)ACCESS_TOKEN_EXPIRATION);
+                session.setMaxInactiveInterval(1800);
 
                 String username = loginRequest.getUsername();
                 List<String> roles = authorities.stream()
