@@ -3,10 +3,7 @@ package com.spring.SecurityMVC.SpringSecurity;
 import com.spring.SecurityMVC.JwtInfo.Service.JwtService;
 import com.spring.SecurityMVC.JwtInfo.Service.RefreshTokenService;
 import com.spring.SecurityMVC.LoginInfo.Service.SessionService;
-import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomAdminAuthenticationFilter;
-import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomJWTAuthenticationFilter;
-import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomSuperAdminAuthenticationFilter;
-import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.CustomUserAuthenticationFilter;
+import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.*;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomSuccessHandler;
 import com.spring.SecurityMVC.UserInfo.Service.UserDetailsService;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationProvider.CustomAuthenticationProvider;
@@ -61,47 +58,53 @@ public class SecurityConfig {
 
     @Bean
     public CustomFailedHandler customFailedHandler() {
-        return new CustomFailedHandler(refreshTokenService(), sessionService());
+        return new CustomFailedHandler(refreshTokenService(redisTemplate), sessionService(redisTemplate), jwtService());
     }
     @Bean
     public CustomUserAuthenticationFilter customUserAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        CustomUserAuthenticationFilter filter = new CustomUserAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(), jwtService(), sessionService());
+        CustomUserAuthenticationFilter filter = new CustomUserAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(redisTemplate), jwtService(), sessionService(redisTemplate));
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
 
     @Bean
     public CustomAdminAuthenticationFilter customAdminAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        CustomAdminAuthenticationFilter filter = new CustomAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(), jwtService(), sessionService());
+        CustomAdminAuthenticationFilter filter = new CustomAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(redisTemplate), jwtService(), sessionService(redisTemplate));
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
 
     @Bean
-    public RefreshTokenService refreshTokenService() {
+    public CustomAuthenticationJwtFilter customAuthenticationJwtFilter(AuthenticationManager authenticationManager) throws Exception{
+        CustomAuthenticationJwtFilter filter = new CustomAuthenticationJwtFilter(jwtService(),refreshTokenService(redisTemplate),customFailedHandler(),customSuccessHandler());
+        filter.setAuthenticationManager(authenticationManager);
+        return  filter;
+    }
+
+    @Bean
+    public RefreshTokenService refreshTokenService(RedisTemplate<String, String> redisTemplate) {
         return new RefreshTokenService(redisTemplate);
     }
 
     @Bean
-    public SessionService sessionService() {
+    public SessionService sessionService(RedisTemplate<String, String> redisTemplate) {
         return new SessionService(redisTemplate);
     }
-
     @Bean
     public JwtService jwtService() {
-        return new JwtService(refreshTokenService());
+        return new JwtService(refreshTokenService(redisTemplate));
     }
 
     @Bean
     public CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        CustomSuperAdminAuthenticationFilter filter = new CustomSuperAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(), jwtService(), sessionService());
+        CustomSuperAdminAuthenticationFilter filter = new CustomSuperAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(redisTemplate), jwtService(), sessionService(redisTemplate));
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
 
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomUserAuthenticationFilter customUserAuthenticationFilter, CustomAdminAuthenticationFilter customAdminAuthenticationFilter, CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationJwtFilter customAuthenticationJwtFilter, CustomUserAuthenticationFilter customUserAuthenticationFilter, CustomAdminAuthenticationFilter customAdminAuthenticationFilter, CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic
@@ -116,7 +119,8 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .formLogin(formLogin -> formLogin.disable());
-        http.addFilterBefore(new CustomJWTAuthenticationFilter(jwtService(), refreshTokenService(),customFailedHandler(),customSuccessHandler()), UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(new CustomJWTAuthenticationFilter(jwtService(), refreshTokenService(),customFailedHandler(),customSuccessHandler()), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(customAuthenticationJwtFilter,UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customSuperAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

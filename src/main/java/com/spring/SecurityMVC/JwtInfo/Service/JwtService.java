@@ -72,11 +72,11 @@ public class JwtService {
         return expiration.before(new Date());
     }
 
-        public Boolean validateRefreshToken(String token,String username) {
-            String RefreshToken = refreshTokenService.getRefreshToken(username);
-            if(token.equals(RefreshToken)) {
-                return validateToken(token);
-            }
+    public Boolean validateRefreshToken(String token,String username) {
+        String RefreshToken = refreshTokenService.getRefreshToken(username);
+        if(token.equals(RefreshToken)) {
+            return validateToken(token);
+        }
         else{
             return false;
         }

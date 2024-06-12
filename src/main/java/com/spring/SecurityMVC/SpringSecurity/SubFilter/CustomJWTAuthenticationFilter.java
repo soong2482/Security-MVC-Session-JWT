@@ -1,4 +1,4 @@
-package com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter;
+package com.spring.SecurityMVC.SpringSecurity.SubFilter;
 
 import com.spring.SecurityMVC.JwtInfo.Service.JwtService;
 import com.spring.SecurityMVC.JwtInfo.Service.RefreshTokenService;
@@ -14,7 +14,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -62,7 +61,7 @@ public class CustomJWTAuthenticationFilter extends OncePerRequestFilter {
 
             Claims claims = jwtService.getClaimsFromToken(accessToken);
             String username = claims.getSubject();
-            List<String> roles = claims.get("roles", List.class);
+            List<String> roles = (List<String>) claims.get("roles", List.class);
 
             if (username == null) {
                 throw new CustomExceptions.AuthenticationFailedException("User is not authenticated (username is not valid)");

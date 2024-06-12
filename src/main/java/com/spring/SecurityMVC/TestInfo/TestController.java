@@ -14,7 +14,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 public class TestController {
-    @PostMapping("${Security.backEndPoint}/Test")
+    @PostMapping("${Security.backEndPoint}/Data/Test")
     public ResponseEntity<String> SignUp(HttpServletResponse response, HttpServletRequest request){
         return ResponseEntity.ok("JWT 인증 통과");
     }

@@ -43,6 +43,12 @@ public class CustomSuperAdminAuthenticationFilter extends AbstractAuthentication
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         String accessToken = refreshTokenService.getAccessTokenFromCookies(request);
+        if (accessToken == null) {
+            throw new AuthenticationException("Access token is missing") {};
+        }
+        if(!jwtService.validateToken(accessToken)){
+            throw new AuthenticationException("User is not authenticated(Token is not valid)") {};
+        }
         List<String> authoritiesObj = jwtService.getRolesFromToken(accessToken);
         if (authoritiesObj == null) {
             throw new AuthenticationException("No roles found in session") {};
