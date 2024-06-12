@@ -194,6 +194,9 @@ UserMapper를 통해 조회된 사용자 정보로 아이디와 비밀번호를 
 
 # 로그인을 제외한 일반 데이터의 접근
 
+![LoginTest](https://github.com/soong2482/Security-MVC-Session-JWT/assets/97108130/5c031a45-c37a-4175-b2f0-208adb2c7a18)
+![redis이미지](https://github.com/soong2482/Security-MVC-Session-JWT/assets/97108130/ccd6b7f2-e5ae-483c-a6c0-f0f38b031e4e)
+
 로그인을 제외한 일반 데이터의 접근 ex)로그인 이후 home 화면 접근
 로그인 이후에 accesstoken과 rereshtoken, session이 발급되는데 여기서 session은 클라이언트에서 저장시키지 않고
 accesstoken와 refreshtoken만 저장시킵니다. +둘다 쿠키에 저장됩니다.
