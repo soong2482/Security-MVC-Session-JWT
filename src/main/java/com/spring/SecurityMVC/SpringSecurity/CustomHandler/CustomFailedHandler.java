@@ -27,7 +27,6 @@ public class CustomFailedHandler implements AuthenticationFailureHandler {
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        SecurityContextHolder.clearContext();
         String clientIP = request.getRemoteAddr();
         String requestURI = request.getRequestURI();
         String errorMessage = exception.getMessage();

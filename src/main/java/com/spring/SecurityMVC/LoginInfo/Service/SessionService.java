@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class SessionService {
-    @Value("${spring.session.store}")
+    @Value("${spring.session.prefix}")
     private String SESSION_PREFIX;
 
     private long REFRESH_TOKEN_EXPIRATION;
