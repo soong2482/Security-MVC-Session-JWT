@@ -11,6 +11,7 @@
 
 않은 api요청들은 로그인이 유지되고있는 jwt인증만으로 받아올수 있게 하여 성능을 향상시켰습니다.
 
+리프레시 토큰을 이용하여 지속적인 인증을 하게 하였고 토큰이 탈취당하여도 세션을 통하여 관리할수 있다는 장점이 제일 좋다고 생각합니다.
 
 
 ## 1. 환경 설정(BuildGradle)
@@ -191,9 +192,42 @@ UserMapper를 통해 조회된 사용자 정보로 아이디와 비밀번호를 
 
 
 
+# 로그인을 제외한 일반 데이터의 접근
+![LoginTest](https://github.com/soong2482/Security-MVC-Session-JWT/assets/97108130/5c031a45-c37a-4175-b2f0-208adb2c7a18)
+![redis이미지](https://github.com/soong2482/Security-MVC-Session-JWT/assets/97108130/ccd6b7f2-e5ae-483c-a6c0-f0f38b031e4e)
 
+로그인을 제외한 일반 데이터의 접근 ex)로그인 이후 home 화면 접근
+로그인 이후에 accesstoken과 rereshtoken, session이 발급되는데 여기서 session은 클라이언트에서 저장시키지 않고
+accesstoken와 refreshtoken만 저장시킵니다. +둘다 쿠키에 저장됩니다.
 
+여기서 권한이 필요 없는 일반적인 접근이라면 ex) /Security/Data/** 
+을 jwt필터에 추가하여 jwt 검증만 수행하게합니다. 
 
+```code
+    String accessToken = refreshTokenService.getAccessTokenFromCookies(request);
+            if (accessToken == null) {
+                throw new AuthenticationException("Access token is missing") {};
+            }
+
+            if (!jwtService.validateToken(accessToken)) {
+                throw new AuthenticationException("Access token is not valid") {};
+            }
+
+            Claims claims = jwtService.getClaimsFromToken(accessToken);
+            String username = claims.getSubject();
+             List<String> roles = (List<String>) claims.get("roles", List.class);
+
+            if (username == null) {
+                throw new AuthenticationException("User is not authenticated (username is not valid)") {};
+            }
+
+            List<SimpleGrantedAuthority> authorities = roles.stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+
+```
+
+이러한 과정을 통해서 session에 접근하는것이 아닌 jwt로만 인증을 수행하므로 효율성이 증가하게됩니다. 
 
 
 
@@ -211,6 +245,9 @@ https://github.com/soong2482/Security-MVC-Session-JWT/tree/Session%2BJWT_SNAPSHO
 "/Security/Admin/**"로 오는 모든 요청을 가로채서 필터를 통과시키게 합니다.
 ```code
  String accessToken = refreshTokenService.getAccessTokenFromCookies(request);
+         if (accessToken == null) {
+            throw new AuthenticationException("Access token is missing") {};
+        }
         if(!jwtService.validateToken(accessToken)){
             throw new AuthenticationException("User is not authenticated(Token is not valid)") {};
         }
@@ -315,8 +352,11 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
                 )
                 .formLogin(formLogin -> formLogin.disable());
 
+        http.addFilterBefore(customAuthenticationJwtFilter,UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(customUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customSuperAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
@@ -350,13 +390,15 @@ public void setAuthorities(List<String> roles) {
 
 이 프로젝트는 Dawon/BackEnd라는 프로젝트를 진행하다가 Security에 대한 지식이 부족한 것 같아서 시작하였습니다.
 
-//JWT 추가 이후 
- 
+//JWT 추가 이후
+
 세션과 JWT의 장점들만 꺼내어 어떻게 결합해야하나가 제일 걱정이였습니다.
 
 세션을 이용하여 사용자의 상태를 서버에서 직접적으로 관리할 수 있게 하고
 
-JWT의 무상태 인증을 통하여 역할접근 api가아닌 일반적인 api요청들은 효율성있게 받아오도록 하였습니다/
+JWT의 무상태 인증을 통하여 역할접근 api가아닌 일반적인 api요청들은 효율성있게 받아오도록 하였습니다.
+
+세션과 jwt의 이중보안으로 보안성은 강화되었습니다.
 
 리프레시 토큰을 이용하여 지속적인 인증을 하게 하였고 토큰이 탈취당하여도 세션을 통하여 관리할수 있다는 장점이 제일 좋다고 생각합니다.
 
@@ -369,7 +411,7 @@ JWT의 무상태 인증을 통하여 역할접근 api가아닌 일반적인 api�
 
 3.된다면 좋겠지만 이메일을 전송할 때 유효하지않은 이메일로 확인코드를 전송시키면 다시 반송되는 로직이있어 반송된다면 유효하지않은 이메일이라고 로그를남기고 싶습니다.()
 
-4.강제로 한 유저의 세션을 삭제할 수 있게 슈퍼어드민의 메서드를 제작하려고합니다.()
+
 
 
 # +배우고 싶은 점
