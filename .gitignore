@@ -38,5 +38,7 @@ out/
 .vscode/
 
 # Allow properties files
-#!*.properties
+#제외 하고 싶으면앞에 느낌표 !+
+*.properties
+dump/
 #src/main/resources/application.properties
