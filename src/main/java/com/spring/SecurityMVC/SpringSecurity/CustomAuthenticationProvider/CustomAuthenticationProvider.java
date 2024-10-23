@@ -38,7 +38,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         } catch (UsernameNotFoundException | BadCredentialsException e) {
             throw new AuthenticationServiceException(e.getMessage(), e);
         } catch (Exception e) {
-            throw new AuthenticationServiceException("An error occurred while trying to authenticate the user", e);
+            throw new AuthenticationServiceException("An error occurred while trying to authenticate the user: "+e.getMessage(), e);
         }
     }
 

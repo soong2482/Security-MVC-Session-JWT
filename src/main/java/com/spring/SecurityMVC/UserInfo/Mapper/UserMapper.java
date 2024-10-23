@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import com.spring.SecurityMVC.SignUpInfo.Domain.SignUp;
 
+import javax.swing.text.html.Option;
+
 @Mapper
 public interface UserMapper{
     Optional<String> FindById(String username);
@@ -17,4 +19,6 @@ public interface UserMapper{
     void insertAuthority(SignUp signUp);
     void insertUser(SignUp signUp);
     List<String> FindByRoles(String username);
+    Optional<String> getUserIP(String username);
+    void UpdateIP(String username,String ip);
 }

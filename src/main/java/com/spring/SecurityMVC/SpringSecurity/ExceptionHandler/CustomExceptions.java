@@ -33,7 +33,17 @@ public class CustomExceptions {
     }
 
     public static class LogoutFailedException extends RuntimeException {
-        public LogoutFailedException(String message, String cause) {
+        public LogoutFailedException(String message) {
+            super(message);
+        }
+    }
+    public static class InvalidIpException extends RuntimeException{
+        public InvalidIpException(String message){
+            super(message);
+        }
+    }
+    public static class UnexpctedException extends RuntimeException{
+        public UnexpctedException(String message){
             super(message);
         }
     }

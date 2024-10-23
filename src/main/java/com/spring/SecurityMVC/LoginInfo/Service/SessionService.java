@@ -25,7 +25,6 @@ public class SessionService {
     public String createNewSession(HttpServletRequest request, String username, List<String> roles) {
         HttpSession session = request.getSession(true);
         session.setMaxInactiveInterval(1800);
-
         session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
         session.setAttribute("username", username);
         session.setAttribute("roles", roles);
@@ -41,9 +40,11 @@ public class SessionService {
         }
     }
 
-    public void invalidateSession(String sessionId) {
+    public void invalidateSession(HttpServletRequest request,String sessionId) {
         if (sessionId != null && !sessionId.isEmpty()) {
-            redisTemplate.delete(SESSION_PREFIX + sessionId);
+            HttpSession session = request.getSession(true);
+            session.invalidate();
+
         } else {
             throw new IllegalArgumentException("Session ID cannot be null or empty");
         }

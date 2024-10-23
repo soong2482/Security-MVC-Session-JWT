@@ -62,6 +62,7 @@ public class UserDetailsService {
                     return true;
                 } else {
                     log.error("User is disabled to FindByEnabled:{}", username);
+                    return false;
                 }
             }
         }catch(Exception e){

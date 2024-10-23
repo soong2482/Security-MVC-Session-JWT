@@ -12,7 +12,7 @@
     </select>
 
     <select id="FindByEnabled" resultType="java.lang.Boolean">
-        SELECT enabled FROM users WHERE username = #{username}
+        SELECT enabled FROM enabled WHERE username = #{username}
     </select>
 
     <select id="FindByEmail" resultType="java.lang.String">
@@ -40,4 +40,12 @@
         INSERT INTO authorities (username, authority)
         VALUES (#{username}, #{authority});
     </insert>
+
+    <select id="getUserIP" resultType="java.lang.String">
+        SELECT ipaddress FROM enabled WHERE username = #{username}
+    </select>
+
+    <update id="UpdateIP" >
+        UPDATE enabled SET ipaddress = #{ip} WHERE username = #{username}
+    </update>
 </mapper>

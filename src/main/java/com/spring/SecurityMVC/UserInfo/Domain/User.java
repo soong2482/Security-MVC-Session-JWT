@@ -15,7 +15,6 @@ public class User implements Serializable {
     private String username;
     private String password;
     private List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-    private boolean enabled;
     private String email;
     public void setAuthorities(List<String> roles) {
         for (String role : roles) {
