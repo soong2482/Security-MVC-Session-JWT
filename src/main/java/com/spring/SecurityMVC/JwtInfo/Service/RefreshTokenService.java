@@ -25,19 +25,13 @@ public class RefreshTokenService {
     }
 
     public String getRefreshToken(String username) {
-        String key = "refreshToken:" + username;
-        return redisTemplate.opsForValue().get(key);
-    }
-    public String getRefreshTokenFromCookies(HttpServletRequest request) {
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("Refresh-Token".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
+        if (username != null && !username.isEmpty()) {
+            String key = "refreshToken:" + username;
+            return redisTemplate.opsForValue().get(key);
         }
         return null;
     }
+
     public String getAccessTokenFromCookies(HttpServletRequest request) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {

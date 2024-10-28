@@ -24,7 +24,6 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
-                .claim("SessionId",sessionId)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
@@ -64,9 +63,6 @@ public class JwtService {
                 .getBody();
     }
 
-    public Claims getClaimsFromToken(String token) {
-        return getAllClaimsFromToken(token);
-    }
     private Boolean isTokenExpired(String token) {
         final Date expiration = getClaimFromToken(token, Claims::getExpiration);
         return expiration.before(new Date());
@@ -81,13 +77,8 @@ public class JwtService {
             return false;
         }
     }
-
-    public String getUsernameFromRefreshToken(String token) {
-        return getUsernameFromToken(token);
-    }
-
     public String getSessionIdFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
         return claims.get("SessionId", String.class);
-    }
+    }//당장 뺄생각하셈 이거 ,,하
 }

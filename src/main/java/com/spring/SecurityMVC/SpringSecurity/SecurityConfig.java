@@ -17,17 +17,23 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.session.SessionRepository;
+import org.springframework.session.data.redis.RedisSessionRepository;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final RedisTemplate redisTemplate;
-
     @Autowired
     public SecurityConfig(RedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
@@ -104,27 +110,47 @@ public class SecurityConfig {
 
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationJwtFilter customAuthenticationJwtFilter, CustomUserAuthenticationFilter customUserAuthenticationFilter, CustomAdminAuthenticationFilter customAdminAuthenticationFilter, CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   CustomAuthenticationJwtFilter customAuthenticationJwtFilter,
+                                                   CustomUserAuthenticationFilter customUserAuthenticationFilter,
+                                                   CustomAdminAuthenticationFilter customAdminAuthenticationFilter,
+                                                   CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+
                 .httpBasic(httpBasic -> httpBasic
                         .authenticationEntryPoint((request, response, authException) -> {
                             customFailedHandler().onAuthenticationFailure(request, response, authException);
                         })
                 )
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // 허용할 도메인 설정
+                    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용할 HTTP 메서드 설정
+                    config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type")); // 허용할 헤더 설정
+                    config.setAllowCredentials(true); // 자격 증명 허용
+                    return config;
+                }))
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/Security/Admin/**").hasRole("ADMIN")
                         .requestMatchers("/Security/SuperAdmin/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/Security/User/**").hasRole("USER")
                         .anyRequest().permitAll()
                 )
-                .formLogin(formLogin -> formLogin.disable());
-//        http.addFilterBefore(new CustomJWTAuthenticationFilter(jwtService(), refreshTokenService(),customFailedHandler(),customSuccessHandler()), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(customAuthenticationJwtFilter,UsernamePasswordAuthenticationFilter.class);
+                .formLogin(formLogin -> formLogin.disable())
+                .sessionManagement(sessionManagement ->
+                sessionManagement
+                        .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::none) // 세션 고정 방지 정책을 'none'으로 설정하여 세션 갱신 방지
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 필요한 경우에만 세션 생성
+        );
+
+        // 커스텀 필터 추가
+        http.addFilterBefore(customAuthenticationJwtFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customSuperAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 }
