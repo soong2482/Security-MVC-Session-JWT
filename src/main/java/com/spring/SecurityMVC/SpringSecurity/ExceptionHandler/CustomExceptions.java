@@ -1,5 +1,7 @@
 package com.spring.SecurityMVC.SpringSecurity.ExceptionHandler;
 
+import jakarta.mail.Session;
+
 public class CustomExceptions {
 
     public static class InvalidRequestException extends RuntimeException {
@@ -44,6 +46,16 @@ public class CustomExceptions {
     }
     public static class UnexpctedException extends RuntimeException{
         public UnexpctedException(String message){
+            super(message);
+        }
+    }
+    public static class TokenException extends RuntimeException{
+        public TokenException(String message){
+            super(message);
+        }
+    }
+    public static class SessionException extends RuntimeException{
+        public SessionException(String message){
             super(message);
         }
     }

@@ -43,12 +43,12 @@ public class JwtService {
         return !isTokenExpired(token);
     }
 
-    public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+    public String getUsernameFromToken(Claims claims) {
+        return claims.getSubject();
     }
 
-    public List<String> getRolesFromToken(String token) {
-        return getClaimFromToken(token, claims -> claims.get("roles", List.class));
+    public List<String> getRolesFromToken(Claims claims) {
+        return claims.get("roles", List.class);
     }
 
     private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
@@ -56,13 +56,12 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    private Claims getAllClaimsFromToken(String token) {
+    public Claims getAllClaimsFromToken(String token) {
         return Jwts.parser()
                 .setSigningKey(SECRET_KEY)
                 .parseClaimsJws(token)
                 .getBody();
     }
-
     private Boolean isTokenExpired(String token) {
         final Date expiration = getClaimFromToken(token, Claims::getExpiration);
         return expiration.before(new Date());
@@ -77,8 +76,4 @@ public class JwtService {
             return false;
         }
     }
-    public String getSessionIdFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
-        return claims.get("SessionId", String.class);
-    }//당장 뺄생각하셈 이거 ,,하
 }

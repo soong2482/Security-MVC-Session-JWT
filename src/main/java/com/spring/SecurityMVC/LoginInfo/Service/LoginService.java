@@ -6,6 +6,8 @@ import com.spring.SecurityMVC.LoginInfo.Domain.LoginRequest;
 import com.spring.SecurityMVC.SpringSecurity.ExceptionHandler.CustomExceptions;
 import com.spring.SecurityMVC.UserInfo.Mapper.UserMapper;
 import io.jsonwebtoken.Claims;
+import io.micrometer.common.util.StringUtils;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -19,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 
@@ -36,6 +39,7 @@ public class LoginService {
     private final RefreshTokenService refreshTokenService;
     private final SessionService sessionservice;
     private final UtilService utilService;
+
     @Autowired
     public LoginService(AuthenticationManager authenticationManager, UserMapper userMapper, JwtService jwtService, RefreshTokenService refreshTokenService, SessionService sessionservice, UtilService utilService) {
         this.authenticationManager = authenticationManager;
@@ -45,41 +49,40 @@ public class LoginService {
         this.sessionservice = sessionservice;
         this.utilService = utilService;
     }
-    public String getAccessToken(HttpServletRequest request){
+
+    public String getAccessToken(HttpServletRequest request) {
         String accessToken = refreshTokenService.getAccessTokenFromCookies(request);
-        if (accessToken == null || !accessToken.isEmpty()) {
-            throw new CustomExceptions.AuthenticationFailedException("Access token is missing");
+        if (StringUtils.isBlank(accessToken)) {
+            throw new CustomExceptions.TokenException("Access token is missing");
         }
         return accessToken;
     }
 
 
-    public String[] validationAccessToken(String accessToken){
-        if (accessToken == null || !accessToken.isEmpty()) {
-            throw new CustomExceptions.AuthenticationFailedException("Access token is missing");
+    public Claims validationAccessToken(String accessToken) {
+        if (StringUtils.isBlank(accessToken)) {
+            throw new CustomExceptions.TokenException("Access token is missing");
         }
-        Claims claims =jwtService.getClaimsFromToken(accessToken);
+        Claims claims = jwtService.getAllClaimsFromToken(accessToken);
         String username = claims.getSubject();
-        if (username == null || !username.isEmpty()) {
+        if (StringUtils.isBlank(username)) {
             throw new CustomExceptions.AuthenticationFailedException("Username extraction from access token failed");
         }
         String sessionId = claims.get("SessionId", String.class);
-        if (sessionId == null || !sessionservice.isSessionValid(sessionId)) {
-            throw new CustomExceptions.AuthenticationFailedException("Session is not valid");
+        if (StringUtils.isBlank(sessionId)) {
+            throw new CustomExceptions.SessionException("Session is not valid");
         }
-        if(!jwtService.validateToken(claims.getId())){
+        if (!jwtService.validateToken(claims.getId())) {
             String refreshToken = refreshTokenService.getRefreshToken(username);
-            if (refreshToken == null) {
-                throw new CustomExceptions.AuthenticationFailedException("Refresh token is missing");
+            if (StringUtils.isBlank(refreshToken)) {
+                throw new CustomExceptions.TokenException("Refresh token is missing");
             }
             if (!jwtService.validateRefreshToken(refreshToken, username)) {
-                throw new CustomExceptions.AuthenticationFailedException("Refresh token is not valid");
+                throw new CustomExceptions.TokenException("Refresh token is not valid");
             }
-
-
         }
 
-        return new String[]{username,sessionId};
+        return claims;
     }
 
 
@@ -87,19 +90,20 @@ public class LoginService {
         if (loginRequest == null) {
             SecurityContextHolder.getContext().getAuthentication();
 
-            String accessToken =getAccessToken(request);
-            String[] claimsList = validationAccessToken(accessToken);
+            HttpSession session = request.getSession(false);
 
-            String username = claimsList[0];
-            String sessionId = claimsList[1];
+            String accessToken = getAccessToken(request);
+            Claims claims = validationAccessToken(accessToken);
 
-            List<String> roles = jwtService.getRolesFromToken(accessToken);
+            String username = claims.getSubject();
 
-            if(roles.isEmpty()) {
-               throw new CustomExceptions.AuthenticationFailedException("Failed to extract roles from access token");
+            List<String> roles = jwtService.getRolesFromToken(claims);
+
+            if (roles.isEmpty()) {
+                throw new CustomExceptions.TokenException("Failed to extract roles from access token");
             }
 
-            sessionservice.invalidateSession(request, sessionId);
+            sessionservice.invalidateSession(session, username);
             String newSessionId = sessionservice.createNewSession(request, username, roles);
             String newAccessToken = jwtService.generateAccessToken(username, roles, newSessionId);
 
@@ -113,73 +117,64 @@ public class LoginService {
             response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
             return ResponseEntity.ok().build();
-        }
- else {
-            try {
-                Authentication authenticationRequest = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+        } else {
+            Authentication authenticationRequest = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
 
-                Authentication authenticationResponse = this.authenticationManager.authenticate(authenticationRequest);
+            Authentication authenticationResponse = this.authenticationManager.authenticate(authenticationRequest);
 
-                SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
+            SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
 
-                String username = loginRequest.getUsername();
+            String username = loginRequest.getUsername();
 
-                List<String> roles = authenticationResponse.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .toList();
+            List<String> roles = authenticationResponse.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
 
-                String sessionID = sessionservice.createNewSession(request,username,roles);
-                String accessToken = jwtService.generateAccessToken(username, roles, sessionID);
-                String refreshToken = jwtService.generateRefreshToken(username);
+            String sessionID = sessionservice.createNewSession(request, username, roles);
+            String accessToken = jwtService.generateAccessToken(username, roles, sessionID);
+            String refreshToken = jwtService.generateRefreshToken(username);
 
-                refreshTokenService.saveRefreshToken(username, refreshToken);
-                String ip = utilService.getClientIP(request);
-                ResponseCookie accessTokenCookie = ResponseCookie.from("Access-Token", accessToken)
-                        .httpOnly(true)
-                        .secure(true)
-                        .path("/")
-                        .maxAge(ACCESS_TOKEN_EXPIRATION)
-                        .build();
-                response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-                if(!utilService.compareHash(username,ip)){
-                    userMapper.UpdateIP(username,ip);
-                    return ResponseEntity.ok().body("IP : Change");
-                }
-                return ResponseEntity.ok().build();
-            } catch (Exception ex) {
-                throw new CustomExceptions.AuthenticationFailedException("Authentication failed: " + ex.getMessage());
+            refreshTokenService.saveRefreshToken(username, refreshToken);
+            String ip = utilService.getClientIP(request);
+            ResponseCookie accessTokenCookie = ResponseCookie.from("Access-Token", accessToken)
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(ACCESS_TOKEN_EXPIRATION)
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+            if (!utilService.compareHash(username, ip)) {
+                userMapper.UpdateIP(username, ip);
+                return ResponseEntity.ok().body("IP : Change"+username);
             }
+            return ResponseEntity.ok().build();
         }
     }
 
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        String[] claimsList = extractUsernameWithoutTokenValidation(request);
-        String username = claimsList[0];
-        String sessionId = claimsList[1];
+        HttpSession session = request.getSession(false);
+        String accessToken = getAccessToken(request);
+        Claims claims = validationAccessToken(accessToken);
+        String username = claims.getSubject();
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("Refresh-Token", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+        ResponseCookie accessTokenCookie = ResponseCookie.from("Access-Token", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
-        try {
-            ResponseCookie refreshTokenCookie = ResponseCookie.from("Refresh-Token", null)
-                    .httpOnly(true)
-                    .secure(true)
-                    .path("/")
-                    .maxAge(0)
-                    .build();
-            ResponseCookie accessTokenCookie = ResponseCookie.from("Access-Token", null)
-                    .httpOnly(true)
-                    .secure(true)
-                    .path("/")
-                    .maxAge(0)
-                    .build();
-            response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-            response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+        refreshTokenService.deleteRefreshToken(username);
+        sessionservice.invalidateSession(session, username);
+        SecurityContextHolder.clearContext();
 
-            SecurityContextHolder.clearContext();
-            refreshTokenService.deleteRefreshToken(username);
-            sessionservice.invalidateSession(request, sessionId);
-            SecurityContextHolder.clearContext();
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            throw new CustomExceptions.LogoutFailedException("Logout failed: " + username + ": " + e.getMessage());
-        }
+        return ResponseEntity.ok().build();
     }
 }

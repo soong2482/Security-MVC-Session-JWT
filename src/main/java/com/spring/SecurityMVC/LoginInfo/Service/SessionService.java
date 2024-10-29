@@ -2,6 +2,8 @@ package com.spring.SecurityMVC.LoginInfo.Service;
 
 import com.spring.SecurityMVC.LoginInfo.Domain.UsernameRequest;
 
+import com.spring.SecurityMVC.SpringSecurity.ExceptionHandler.CustomExceptions;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -47,21 +49,20 @@ public class SessionService {
     }
 
     public boolean isSessionValid(String sessionId) {
-        if (sessionId != null && !sessionId.isEmpty()) {
+        if (!StringUtils.isBlank(sessionId)) {
             return redisTemplate.hasKey(SESSION_PREFIX + sessionId);
         } else {
             return false;
         }
     }
 
-    public void invalidateSession(HttpServletRequest request,String username) {
+    public void invalidateSession(HttpSession session,String username) {
         if (username != null && !username.isEmpty()) {
-            HttpSession session = request.getSession(false);
             String key = "user_session:"+username;
             redisTemplate.delete(key);
             session.invalidate();
         } else {
-            throw new IllegalArgumentException("Session ID cannot be null or empty");
+            throw new CustomExceptions.SessionException("Session ID cannot be null or empty");
         }
     }
     public ResponseEntity<String> deleteSessionByUsername(UsernameRequest usernameRequest, HttpServletResponse httpServletResponse) {
@@ -74,6 +75,7 @@ public class SessionService {
         redisTemplate.delete("refreshToken:"+username);
         return ResponseEntity.ok().body("Delete Success");
     }
+
 
 
 

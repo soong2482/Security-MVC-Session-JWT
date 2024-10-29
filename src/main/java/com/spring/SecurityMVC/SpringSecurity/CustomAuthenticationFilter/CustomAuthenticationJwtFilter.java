@@ -1,7 +1,5 @@
 package com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter;
 
-import com.spring.SecurityMVC.JwtInfo.Service.JwtService;
-import com.spring.SecurityMVC.JwtInfo.Service.RefreshTokenService;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomFailedHandler;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomSuccessHandler;
 import com.spring.SecurityMVC.SpringSecurity.ExceptionHandler.CustomExceptions;
@@ -10,66 +8,47 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.BadCredentialsException;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-
 public class CustomAuthenticationJwtFilter extends AbstractAuthenticationProcessingFilter {
-    private final JwtService jwtService;
-    private final RefreshTokenService refreshTokenService;
-    private final CustomFailedHandler failureHandler;
+
     private final CustomSuccessHandler successHandler;
+    private final CustomFailedHandler failureHandler;
+    private final UtilSecurityService utilSecurityService;
 
-    public CustomAuthenticationJwtFilter(JwtService jwtService, RefreshTokenService refreshTokenService, CustomFailedHandler failureHandler, CustomSuccessHandler successHandler) {
+    public CustomAuthenticationJwtFilter(CustomSuccessHandler successHandler, CustomFailedHandler failureHandler, UtilSecurityService utilSecurityService) {
         super(new AntPathRequestMatcher("/Security/Data/**"));
-        this.jwtService = jwtService;
-        this.refreshTokenService = refreshTokenService;
-        this.failureHandler = failureHandler;
         this.successHandler = successHandler;
+        this.failureHandler = failureHandler;
+        this.utilSecurityService = utilSecurityService;
     }
-
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws CustomExceptions.TokenException, IOException, ServletException {
+        String accessToken = utilSecurityService.getAccessTokenFromCookies(request);
+        HttpSession session = request.getSession(false);
 
-            String accessToken = refreshTokenService.getAccessTokenFromCookies(request);
-            if (accessToken == null) {
-                throw new AuthenticationException("Access token is missing") {};
-            }
+        utilSecurityService.validateAuthentication(accessToken, session);
 
-            if (!jwtService.validateToken(accessToken)) {
-                throw new AuthenticationException("Access token is not valid") {};
-            }
+        Claims claims = utilSecurityService.getAllClaimsFromToken(accessToken);
 
-            Claims claims = jwtService.getClaimsFromToken(accessToken);
-            String username = claims.getSubject();
-             List<String> roles = (List<String>) claims.get("roles", List.class);
+        List<SimpleGrantedAuthority> authorities = utilSecurityService.getRolesFromToken(claims).stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
 
-            if (username == null) {
-                throw new AuthenticationException("User is not authenticated (username is not valid)") {};
-            }
 
-            List<SimpleGrantedAuthority> authorities = roles.stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .collect(Collectors.toList());
-
-        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(
-                jwtService.getUsernameFromToken(accessToken),
-                null,
-                authorities
-        );
-        return authRequest;
+        return new UsernamePasswordAuthenticationToken(claims.getSubject(), null, authorities);
     }
+
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         successHandler.onAuthenticationSuccess(request, response, authResult);

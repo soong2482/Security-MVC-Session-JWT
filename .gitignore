@@ -42,3 +42,4 @@ out/
 resources/application.properties
 dump/
 #src/main/resources/application.properties
+#git rm --cached src/main/resources/application.properties

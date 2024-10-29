@@ -33,10 +33,10 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final RedisTemplate redisTemplate;
+    private final UtilSecurityService utilSecurityService;
     @Autowired
-    public SecurityConfig(RedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
+    public SecurityConfig(UtilSecurityService utilSecurityService) {
+        this.utilSecurityService = utilSecurityService;
     }
 
     @Bean
@@ -61,52 +61,40 @@ public class SecurityConfig {
     public CustomSuccessHandler customSuccessHandler() {
         return new CustomSuccessHandler();
     }
-
     @Bean
     public CustomFailedHandler customFailedHandler() {
-        return new CustomFailedHandler(refreshTokenService(redisTemplate), sessionService(redisTemplate), jwtService());
+        return new CustomFailedHandler();
     }
+
     @Bean
     public CustomUserAuthenticationFilter customUserAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        CustomUserAuthenticationFilter filter = new CustomUserAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(redisTemplate), jwtService(), sessionService(redisTemplate));
+        CustomUserAuthenticationFilter filter = new CustomUserAuthenticationFilter(customSuccessHandler(), customFailedHandler(),utilSecurityService);
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
 
     @Bean
     public CustomAdminAuthenticationFilter customAdminAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        CustomAdminAuthenticationFilter filter = new CustomAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(redisTemplate), jwtService(), sessionService(redisTemplate));
+        CustomAdminAuthenticationFilter filter = new CustomAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(),utilSecurityService);
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
 
     @Bean
     public CustomAuthenticationJwtFilter customAuthenticationJwtFilter(AuthenticationManager authenticationManager) throws Exception{
-        CustomAuthenticationJwtFilter filter = new CustomAuthenticationJwtFilter(jwtService(),refreshTokenService(redisTemplate),customFailedHandler(),customSuccessHandler());
+        CustomAuthenticationJwtFilter filter = new CustomAuthenticationJwtFilter(customSuccessHandler(),customFailedHandler(),utilSecurityService);
         filter.setAuthenticationManager(authenticationManager);
         return  filter;
     }
-
-    @Bean
-    public RefreshTokenService refreshTokenService(RedisTemplate<String, String> redisTemplate) {
-        return new RefreshTokenService(redisTemplate);
-    }
-
-    @Bean
-    public SessionService sessionService(RedisTemplate<String, String> redisTemplate) {
-        return new SessionService(redisTemplate);
-    }
-    @Bean
-    public JwtService jwtService() {
-        return new JwtService(refreshTokenService(redisTemplate));
-    }
-
     @Bean
     public CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
-        CustomSuperAdminAuthenticationFilter filter = new CustomSuperAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(), refreshTokenService(redisTemplate), jwtService(), sessionService(redisTemplate));
+        CustomSuperAdminAuthenticationFilter filter = new CustomSuperAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(),utilSecurityService);
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
+
+
+
 
 
     @Bean

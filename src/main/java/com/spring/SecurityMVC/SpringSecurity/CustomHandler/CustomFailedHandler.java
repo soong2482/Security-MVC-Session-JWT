@@ -15,15 +15,6 @@ import java.io.IOException;
 
 @Slf4j
 public class CustomFailedHandler implements AuthenticationFailureHandler {
-    private final RefreshTokenService refreshTokenService;
-    private final SessionService sessionService;
-    private final JwtService jwtService;
-    public CustomFailedHandler(RefreshTokenService refreshTokenService, SessionService sessionService, JwtService jwtService) {
-        this.refreshTokenService = refreshTokenService;
-        this.sessionService = sessionService;
-
-        this.jwtService = jwtService;
-    }
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {

@@ -1,5 +1,7 @@
 package com.spring.SecurityMVC.JwtInfo.Service;
 
+import com.spring.SecurityMVC.SpringSecurity.ExceptionHandler.CustomExceptions;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,14 +24,18 @@ public class RefreshTokenService {
     public void saveRefreshToken(String username, String refreshToken) {
         String key = "refreshToken:" + username;
         redisTemplate.opsForValue().set(key, refreshToken, REFRESH_TOKEN_EXPIRATION, TimeUnit.SECONDS);
+        if(!redisTemplate.hasKey(key)){
+            throw new CustomExceptions.TokenException("Redis:Failed Save RefreshToken:"+username);
+        }
     }
 
     public String getRefreshToken(String username) {
-        if (username != null && !username.isEmpty()) {
+        if (!StringUtils.isBlank(username)) {
             String key = "refreshToken:" + username;
             return redisTemplate.opsForValue().get(key);
+        }else{
+            throw new CustomExceptions.TokenException("Failed Get RefreshToken:"+username);
         }
-        return null;
     }
 
     public String getAccessTokenFromCookies(HttpServletRequest request) {
@@ -40,10 +46,14 @@ public class RefreshTokenService {
                 }
             }
         }
-        return null;
+        throw new CustomExceptions.TokenException("Failed Not Have AccessToken");
     }
     public void deleteRefreshToken(String username) {
         String key = "refreshToken:" + username;
-        redisTemplate.delete(key);
+        if(redisTemplate.hasKey(key)) {
+            redisTemplate.delete(key);
+        }else{
+            throw new CustomExceptions.TokenException("Redis:Failed Delete RefreshToken:"+username);
+        }
     }
 }
