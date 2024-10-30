@@ -30,23 +30,24 @@ public class SessionService {
         this.redisTemplate = redisTemplate;
     }
 
-    public String createNewSession(HttpServletRequest request, String username, List<String> roles) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public void createNewSession(HttpServletRequest request, String username, List<String> roles) {
         HttpSession session = request.getSession(true);
         session.setMaxInactiveInterval(1800);
-        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
         session.setAttribute("username", username);
         session.setAttribute("roles", roles);
-        String key = "user_session:" + username;
-        SecurityContextHolder.clearContext();
-        if (authentication != null && authentication.isAuthenticated()) {
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        } else {
-            throw new IllegalStateException("Authentication is not present or invalid.");
+
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CustomExceptions.AuthenticationFailedException("Authentication is not present or invalid.");
         }
-        redisTemplate.opsForValue().set(key,session.getId(), 1800, TimeUnit.SECONDS);
-        return session.getId();
+        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+
+        String key = "user_session:" + username;
+        redisTemplate.opsForValue().set(key, session.getId(), 1800, TimeUnit.SECONDS);
     }
+
 
     public boolean isSessionValid(String sessionId) {
         if (!StringUtils.isBlank(sessionId)) {

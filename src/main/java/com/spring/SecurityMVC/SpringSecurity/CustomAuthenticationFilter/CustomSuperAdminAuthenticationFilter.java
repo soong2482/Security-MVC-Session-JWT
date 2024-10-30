@@ -34,11 +34,15 @@ public class CustomSuperAdminAuthenticationFilter extends AbstractAuthentication
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws CustomExceptions.TokenException, IOException, ServletException {
-        String accessToken = utilSecurityService.getAccessTokenFromCookies(request);
+
         HttpSession session = request.getSession(false);
-
-        utilSecurityService.validateAuthentication(accessToken, session);
-
+        String accessToken="";
+        try {
+             accessToken = utilSecurityService.getAccessTokenFromCookies(request);
+            utilSecurityService.validateAuthentication(accessToken, session);
+        } catch (CustomExceptions.SessionException | CustomExceptions.TokenException ex) {
+            failureHandler.onAuthenticationFailure(request, response, new AuthenticationException(ex.getMessage()) {});
+        }
         Claims claims = utilSecurityService.getAllClaimsFromToken(accessToken);
 
         List<SimpleGrantedAuthority> authorities = utilSecurityService.getRolesFromToken(claims).stream()

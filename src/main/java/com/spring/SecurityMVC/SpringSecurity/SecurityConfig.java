@@ -1,17 +1,13 @@
 package com.spring.SecurityMVC.SpringSecurity;
 
-import com.spring.SecurityMVC.JwtInfo.Service.JwtService;
-import com.spring.SecurityMVC.JwtInfo.Service.RefreshTokenService;
-import com.spring.SecurityMVC.LoginInfo.Service.SessionService;
+
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationFilter.*;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomSuccessHandler;
 import com.spring.SecurityMVC.UserInfo.Service.UserDetailsService;
 import com.spring.SecurityMVC.SpringSecurity.CustomAuthenticationProvider.CustomAuthenticationProvider;
 import com.spring.SecurityMVC.SpringSecurity.CustomHandler.CustomFailedHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -23,8 +19,6 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.session.SessionRepository;
-import org.springframework.session.data.redis.RedisSessionRepository;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
@@ -34,7 +28,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final UtilSecurityService utilSecurityService;
-    @Autowired
+
     public SecurityConfig(UtilSecurityService utilSecurityService) {
         this.utilSecurityService = utilSecurityService;
     }

@@ -36,10 +36,9 @@ out/
 
 ### VS Code ###
 .vscode/
+#dump/
 
 # Allow properties files
 #제외 하고 싶으면앞에 느낌표 !+
-resources/application.properties
-#dump/
 #src/main/resources/application.properties
 #git rm --cached src/main/resources/application.properties

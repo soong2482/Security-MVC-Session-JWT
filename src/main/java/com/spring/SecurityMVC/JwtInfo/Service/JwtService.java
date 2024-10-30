@@ -20,12 +20,13 @@ public class JwtService {
         this.refreshTokenService = refreshTokenService;
     }
 
-    public String generateAccessToken(String username, List<String> roles,String sessionId) {
+    public String generateAccessToken(String username, List<String> roles) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+//                .setExpiration(new Date(System.currentTimeMillis() + 1000))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }

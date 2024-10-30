@@ -22,6 +22,10 @@ public class LoginController {
     public ResponseEntity<String> login(@RequestBody(required = false) LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
         return loginService.login(loginRequest, response, request);
     }
+    @PostMapping("${Security.backEndPoint}/AuthLogin")
+    public ResponseEntity<String> authlogin(HttpServletRequest request,HttpServletResponse response){
+        return loginService.authlogin(request,response);
+    }
     @PostMapping("${Security.backEndPoint}/Logout")
     public ResponseEntity<Void> logout(HttpServletRequest request,HttpServletResponse response) {
         return loginService.logout(request,response);

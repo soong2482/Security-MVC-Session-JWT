@@ -5,6 +5,7 @@ import com.spring.SecurityMVC.JwtInfo.Service.RefreshTokenService;
 import com.spring.SecurityMVC.LoginInfo.Service.SessionService;
 import com.spring.SecurityMVC.SpringSecurity.ExceptionHandler.CustomExceptions;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
@@ -27,11 +28,6 @@ public class UtilSecurityService {
         this.sessionService = sessionService;
     }
 
-    public void validateAuthentication(String accessToken, HttpSession session) throws CustomExceptions.SessionException,CustomExceptions.TokenException {
-        validateTokenAndRefreshIfNeeded(accessToken);
-        validateRolesInToken(accessToken);
-        validateSession(session);
-    }
     public String getAccessTokenFromCookies(HttpServletRequest request){
         return refreshTokenService.getAccessTokenFromCookies(request);
     }
@@ -41,17 +37,21 @@ public class UtilSecurityService {
     public Claims getAllClaimsFromToken(String accessToken){
         return jwtService.getAllClaimsFromToken(accessToken);
     }
+    public void validateAuthentication(String accessToken, HttpSession session) throws CustomExceptions.SessionException, CustomExceptions.TokenException {
+        validateSession(session);
+        validateTokenAndRefreshIfNeeded(accessToken);
+        validateRolesInToken(accessToken);
+    }
 
 
     private void validateTokenAndRefreshIfNeeded(String accessToken) throws CustomExceptions.TokenException, CustomExceptions.TokenException {
         if (StringUtils.isBlank(accessToken)) {
             throw new CustomExceptions.TokenException("Access token is missing");
         }
-
-        Claims claims = getAllClaimsFromToken(accessToken);
-        if (!jwtService.validateToken(claims.getId())) {
-            String refreshToken = retrieveAndValidateRefreshToken(claims.getId());
-            validateRefreshToken(refreshToken, claims.getId());
+        try {
+            jwtService.validateToken(accessToken);
+        } catch (JwtException AccessException) {
+            throw new CustomExceptions.TokenException("Access token is Expired");
         }
     }
 
@@ -83,4 +83,5 @@ public class UtilSecurityService {
             throw new CustomExceptions.SessionException("Session is not valid: " + sessionId);
         }
     }
+
 }

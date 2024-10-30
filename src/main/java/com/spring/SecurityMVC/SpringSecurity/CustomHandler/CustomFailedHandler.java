@@ -27,5 +27,6 @@ public class CustomFailedHandler implements AuthenticationFailureHandler {
 
         log.warn("Authentication failed from IP: {} on API: {} with exception: {}", clientIP, requestURI, errorMessage);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().write(exception.getMessage());
     }
 }
