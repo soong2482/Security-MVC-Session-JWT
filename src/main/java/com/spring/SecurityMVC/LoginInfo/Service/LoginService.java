@@ -2,16 +2,18 @@ package com.spring.SecurityMVC.LoginInfo.Service;
 
 import com.spring.SecurityMVC.JwtInfo.Service.JwtService;
 import com.spring.SecurityMVC.JwtInfo.Service.RefreshTokenService;
+import com.spring.SecurityMVC.LoginInfo.Domain.AuthLoginRequest;
+import com.spring.SecurityMVC.LoginInfo.Domain.AuthLogoutRequest;
 import com.spring.SecurityMVC.LoginInfo.Domain.LoginRequest;
 import com.spring.SecurityMVC.SpringSecurity.ExceptionHandler.CustomExceptions;
 import com.spring.SecurityMVC.UserInfo.Mapper.UserMapper;
-import com.spring.SecurityMVC.UserInfo.Service.UserDetailsService;
-import io.jsonwebtoken.Claims;;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,8 +26,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -42,28 +44,36 @@ public class LoginService {
     private final RefreshTokenService refreshTokenService;
     private final SessionService sessionservice;
     private final UtilService utilService;
+    private final RedisTemplate redisTemplate;
     @Autowired
-    public LoginService(AuthenticationManager authenticationManager, UserMapper userMapper, JwtService jwtService, RefreshTokenService refreshTokenService, SessionService sessionservice, UtilService utilService) {
+    public LoginService(AuthenticationManager authenticationManager, UserMapper userMapper, JwtService jwtService, RefreshTokenService refreshTokenService, SessionService sessionservice, UtilService utilService, RedisTemplate redisTemplate) {
         this.authenticationManager = authenticationManager;
         this.userMapper = userMapper;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
         this.sessionservice = sessionservice;
         this.utilService = utilService;
+        this.redisTemplate = redisTemplate;
     }
 
     public String getAccessToken(HttpServletRequest request) {
         String accessToken = refreshTokenService.getAccessTokenFromCookies(request);
         if (StringUtils.isBlank(accessToken)) {
-            throw new CustomExceptions.TokenException("Access token is missing");
+            throw new CustomExceptions.MissingRequestBodyException("Access token is missing");
         }
         return accessToken;
     }
 
 
-    public Claims validationAccessToken(String accessToken,HttpSession session) {
-        String username = (String) session.getAttribute("username");
-
+    public Claims validationAccessToken(String accessToken,HttpSession session,String fingerprint,String username) {
+        if(session==null){;
+            String key = "finger-print:" + username;
+            if(!fingerprint.equals(redisTemplate.opsForValue().get(key))){
+                throw new CustomExceptions.AuthenticationFailedException("Finger Data not equals original Data");
+            }
+        }else {
+            username = (String) session.getAttribute("username");
+        }
         if (StringUtils.isBlank(username)) {
             throw new CustomExceptions.AuthenticationFailedException("Username extraction from Session failed. Null Session");
         }
@@ -73,7 +83,7 @@ public class LoginService {
         } catch (JwtException AccessException) {
             String refreshToken = refreshTokenService.getRefreshToken(username);
             if (StringUtils.isBlank(refreshToken)) {
-                throw new CustomExceptions.TokenException("Refresh token is missing");
+                throw new CustomExceptions.MissingRequestBodyException("Refresh token is missing");
             }
             if (!jwtService.validateRefreshToken(refreshToken, username)) {
                 throw new CustomExceptions.TokenException("Refresh token is not valid");
@@ -89,22 +99,24 @@ public class LoginService {
         return claims;
 
     }
-    public ResponseEntity<String> authlogin(HttpServletRequest request,HttpServletResponse response){
+    public ResponseEntity<String> authlogin(AuthLoginRequest authLoginRequest,HttpServletRequest request, HttpServletResponse response){
         SecurityContextHolder.getContext().getAuthentication();
-
+        String username = "";
+        username = utilService.getUserNameFromCookies(request);
+        if(StringUtils.isBlank(username)){
+            throw new CustomExceptions.MissingRequestBodyException("Username is missing");
+        }
         HttpSession session = request.getSession(false);
-
         String accessToken = getAccessToken(request);
-        Claims claims = validationAccessToken(accessToken,session);
-
-        String username = (String) session.getAttribute("username");
-
+        Claims claims = validationAccessToken(accessToken,session,authLoginRequest.getFingerprint(),username);
         List<String> roles = jwtService.getRolesFromToken(claims);
 
         if (roles.isEmpty()) {
             throw new CustomExceptions.TokenException("Failed to extract roles from access token");
         }
-        sessionservice.invalidateSession(session, username);
+        if(session!=null){
+            sessionservice.invalidateSession(session, username);
+        }
         sessionservice.createNewSession(request, username, roles);
         String newAccessToken = jwtService.generateAccessToken(username, roles);
 
@@ -117,11 +129,13 @@ public class LoginService {
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Token and Session Refreshed Successful");
     }
 
+
+
     public ResponseEntity<String> login(LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
-        if (loginRequest == null || loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
+        if (loginRequest == null || loginRequest.getUsername() == null || loginRequest.getPassword() == null || loginRequest.getFingerprint()==null) {
             throw new CustomExceptions.InvalidRequestException("Invalid request: Login data is missing.");
         }
 
@@ -142,6 +156,9 @@ public class LoginService {
         String refreshToken = jwtService.generateRefreshToken(username);
 
         refreshTokenService.saveRefreshToken(username, refreshToken);
+
+        redisTemplate.opsForValue().set("finger-print:"+username, loginRequest.getFingerprint(), 60 * 60 * 24 * 7, TimeUnit.SECONDS);
+
         ResponseCookie accessTokenCookie = ResponseCookie.from("Access-Token", accessToken)
                 .httpOnly(true)
                 .secure(true)
@@ -149,18 +166,36 @@ public class LoginService {
                 .maxAge(ACCESS_TOKEN_EXPIRATION)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+
+        ResponseCookie userNameCookie = ResponseCookie.from("username",username)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(REFRESH_TOKEN_EXPIRATION)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, userNameCookie.toString());
+
         String ip = utilService.getClientIP(request);
         if (!utilService.compareHash(username, ip)) {
             userMapper.UpdateIP(username, ip);
             return ResponseEntity.ok("IP changed for user: " + username);
         }
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Login successful");
 
     }
 
-    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<String> logout(AuthLogoutRequest authLogoutRequest, HttpServletRequest request, HttpServletResponse response) {
+        SecurityContextHolder.getContext().getAuthentication();
+        String username = "";
+        username = utilService.getUserNameFromCookies(request);
+        if(StringUtils.isBlank(username)){
+            throw new CustomExceptions.MissingRequestBodyException("Username is missing");
+        }
+        System.out.println(username);//다시 ret
         HttpSession session = request.getSession(false);
-        String username = (String) session.getAttribute("username");
+        String accessToken = getAccessToken(request);
+        validationAccessToken(accessToken,session,authLogoutRequest.getFingerprint(),username);
+
         ResponseCookie refreshTokenCookie = ResponseCookie.from("Refresh-Token", null)
                 .httpOnly(true)
                 .secure(true)
@@ -173,13 +208,19 @@ public class LoginService {
                 .path("/")
                 .maxAge(0)
                 .build();
+        ResponseCookie userNameCookie = ResponseCookie.from("username",null) .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-
+        response.addHeader(HttpHeaders.SET_COOKIE, userNameCookie.toString());
         refreshTokenService.deleteRefreshToken(username);
         sessionservice.invalidateSession(session, username);
         SecurityContextHolder.clearContext();
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Logout Successful");
     }
 }

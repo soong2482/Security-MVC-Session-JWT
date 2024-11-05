@@ -1,12 +1,16 @@
 package com.spring.SecurityMVC.LoginInfo.Service;
 
+import com.spring.SecurityMVC.LoginInfo.Domain.FingerPrintSettings;
 import com.spring.SecurityMVC.UserInfo.Mapper.UserMapper;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 
 @Service
 public class UtilService {
@@ -57,6 +61,30 @@ public class UtilService {
         public boolean compareHash(String username, String hashedIP) {
             String originalIP=userMapper.getUserIP(username).get();
             return originalIP.equals(hashedIP);
+        }
+
+        //임시 Random Font And Text
+        public ResponseEntity<FingerPrintSettings> getFingerprintSettings(){
+            String[] fonts = {"14px Arial", "16px Verdana", "12px Times New Roman", "15px Helvetica"};
+            String[] texts = {"fingerprint", "uniqueID", "browserTest", "sampleText"};
+
+            Random random = new Random();
+            String randomFont = fonts[random.nextInt(fonts.length)];
+            String randomText = texts[random.nextInt(texts.length)];
+            FingerPrintSettings fp = new FingerPrintSettings();
+            fp.setFont(randomFont);
+            fp.setSize(randomText);
+
+            return ResponseEntity.ok(fp);
+        }
+
+    public String getUserNameFromCookies(HttpServletRequest request) {
+        for (Cookie cookie : request.getCookies()) {
+            if ("username".equals(cookie.getName())) {
+                return cookie.getName();
+                }
+            }
+            return "";
         }
 
 

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpSession;
 
-import javax.management.relation.Role;
 import java.util.List;
 
 @Service
@@ -46,7 +45,7 @@ public class UtilSecurityService {
 
     private void validateTokenAndRefreshIfNeeded(String accessToken) throws CustomExceptions.TokenException, CustomExceptions.TokenException {
         if (StringUtils.isBlank(accessToken)) {
-            throw new CustomExceptions.TokenException("Access token is missing");
+            throw new CustomExceptions.MissingRequestBodyException("Access token is missing");
         }
         try {
             jwtService.validateToken(accessToken);
@@ -73,11 +72,14 @@ public class UtilSecurityService {
         Claims claims = jwtService.getAllClaimsFromToken(accessToken);
         List<String> roles = jwtService.getRolesFromToken(claims);
         if (roles == null || roles.isEmpty()) {
-            throw new CustomExceptions.TokenException("No roles found in token");
+            throw new CustomExceptions.TokenException("Not have roles in token");
         }
     }
 
     private void validateSession(HttpSession session) throws CustomExceptions.SessionException {
+        if(session==null){
+            throw new CustomExceptions.SessionException("Session is null");
+        }
         String sessionId = session.getId();
         if (StringUtils.isBlank(sessionId) || !sessionService.isSessionValid(sessionId)) {
             throw new CustomExceptions.SessionException("Session is not valid: " + sessionId);
