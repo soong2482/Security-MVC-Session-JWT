@@ -22,3 +22,6 @@
 [2024-11-08 10:35:06.653|DEBUG|main|c.s.S.S.C.CustomUserAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customUserAuthenticationFilter' configured for use
 [2024-11-08 10:35:06.654|DEBUG|main|c.s.S.S.C.CustomAuthenticationJwtFilter:GenericFilterBean.java:init:240]	Filter 'customAuthenticationJwtFilter' configured for use
 [2024-11-08 10:35:06.655|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2024-11-08 13:45:16.295|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2024-11-08 13:45:16.296|DEBUG|main|c.s.S.S.C.CustomUserAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customUserAuthenticationFilter' configured for use
+[2024-11-08 13:45:16.297|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use

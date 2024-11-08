@@ -21,6 +21,7 @@ public class SuperAdminController {
     }
     @PostMapping("${Security.backEndPoint}/SuperAdmin/DeleteSession")
     public ResponseEntity<String> deleteSession(@RequestBody DeleteSessionRequest usernameRequest, HttpServletResponse response) {
-        return sessionService.deleteSessionByUsername(usernameRequest,response);
+        String body =sessionService.deleteSessionByUsername(usernameRequest,response);
+        return ResponseEntity.ok().body(body);
     }
 }

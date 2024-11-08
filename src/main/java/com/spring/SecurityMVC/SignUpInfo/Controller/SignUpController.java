@@ -19,24 +19,29 @@ public class SignUpController {
 
     @PostMapping("${Security.backEndPoint}/SignUp")
     public ResponseEntity<String> SignUp(@RequestBody(required = false)SignUp signUp, HttpServletResponse response, HttpServletRequest request){
-        return signUpService.SignUp(signUp,request,response);
+        String body = signUpService.SignUp(signUp,request,response);
+        return ResponseEntity.ok(body);
     }
 
     @PostMapping("${Security.backEndPoint}/PostEmail")
     public ResponseEntity<String> PostEmail(@RequestBody PostEmail postEmail, HttpServletRequest request, HttpServletResponse response){
-        return signUpService.PostEmail(postEmail,request,response);
+        String body = signUpService.PostEmail(postEmail,request,response);
+        return ResponseEntity.ok(body);
     }
     @PostMapping("${Security.backEndPoint}/CheckEmailCode")
     public ResponseEntity<String> CheckEmailCode(@RequestBody CheckEmailCode checkEmailCode, HttpServletRequest request, HttpServletResponse response){
-        return signUpService.CheckEmailCode(checkEmailCode,request,response);
+        String body = signUpService.CheckEmailCode(checkEmailCode,request,response);
+        return ResponseEntity.ok(body);
     }
 
     @PostMapping("${Security.backEndPoint}/ValidateUserName")
     public ResponseEntity<String> ValidateUserName(@RequestBody ValidateUserName validateUserName, HttpServletRequest request, HttpServletResponse response) {
-        return signUpService.ValidateUserName(validateUserName, request, response);
+        String body = signUpService.ValidateUserName(validateUserName, request, response);
+        return ResponseEntity.ok(body);
     }
     @PostMapping("${Security.backEndPoint}/ValidateEmail")
     public ResponseEntity<String> ValidateEmail(@RequestBody ValidateEmail validateEmail, HttpServletRequest request, HttpServletResponse response){
-        return signUpService.ValidateEmail(validateEmail,request,response);
+        String body = signUpService.ValidateEmail(validateEmail, request, response);
+        return ResponseEntity.ok(body);
     }
 }

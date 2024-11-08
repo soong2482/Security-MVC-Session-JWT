@@ -33,7 +33,7 @@ public class SignUpService {
         this.utilService = utilService;
     }
 
-    public ResponseEntity<String> SignUp(SignUp signUp, HttpServletRequest request, HttpServletResponse response) {
+    public String SignUp(SignUp signUp, HttpServletRequest request, HttpServletResponse response) {
         if (signUp == null  ||signUp.getEmail()==null || signUp.getPassword() == null || signUp.getUsername() == null) {
             throw new CustomExceptions.InvalidRequestException("SignUp information cannot be null");
         }
@@ -53,10 +53,10 @@ public class SignUpService {
         } catch (DataAccessException e) {
             throw new CustomExceptions.DatabaseException("Database operation failed: " + e.getMessage());
         }
-        return ResponseEntity.ok(signUp.getUsername()+":SingUp Success");
+        return signUp.getUsername()+":SingUp Success";
     }
 
-    public ResponseEntity<String> PostEmail(PostEmail postEmail, HttpServletRequest request, HttpServletResponse response) {
+    public String PostEmail(PostEmail postEmail, HttpServletRequest request, HttpServletResponse response) {
         String email = postEmail.getEmail();
         if (email == null || email.trim().isEmpty()) {
             throw new CustomExceptions.InvalidRequestException("Email cannot be null or empty");
@@ -66,10 +66,10 @@ public class SignUpService {
         String subject = "Your Authentication Code";
         String body = "Your authentication code is: " + authCode;
         emailService.sendEmail(email, subject, body);
-        return ResponseEntity.ok(email+":post mail success");
+        return email+":post mail success";
     }
 
-    public ResponseEntity<String> CheckEmailCode(CheckEmailCode checkEmailCode, HttpServletRequest request, HttpServletResponse response) {
+    public String CheckEmailCode(CheckEmailCode checkEmailCode, HttpServletRequest request, HttpServletResponse response) {
         String email = checkEmailCode.getEmail();
         String emailCode = checkEmailCode.getEmailcode();
         if (email == null || email.trim().isEmpty() || emailCode == null || emailCode.trim().isEmpty()) {
@@ -82,13 +82,13 @@ public class SignUpService {
 
         if (storedAuthCode != null && storedAuthCode.equals(emailCode)) {
             redisTemplate.delete("email_verification:" + email);
-            return ResponseEntity.ok(email+":Check Email Success");
+            return email+":Check Email Success";
         } else {
             throw new CustomExceptions.EmailCodeMismatchException("Email code does not match or has expired");
         }
     }
 
-    public ResponseEntity<String> ValidateUserName(ValidateUserName validateUserName, HttpServletRequest request, HttpServletResponse response) {
+    public String ValidateUserName(ValidateUserName validateUserName, HttpServletRequest request, HttpServletResponse response) {
         String username = validateUserName.getUsername();
         if ( username== null || username.trim().isEmpty()) {
             throw new CustomExceptions.InvalidRequestException("Username cannot be null or empty");
@@ -96,11 +96,11 @@ public class SignUpService {
         if (userMapper.FindById(username).isPresent()) {
             throw new CustomExceptions.UserAlreadyExistsException("Username already exists");
         } else {
-            return ResponseEntity.ok(username+": Available for use");
+            return username+": Available for use";
         }
     }
 
-    public ResponseEntity<String> ValidateEmail(ValidateEmail validateEmail, HttpServletRequest request, HttpServletResponse response) {
+    public String ValidateEmail(ValidateEmail validateEmail, HttpServletRequest request, HttpServletResponse response) {
         String email = validateEmail.getEmail();
         if (email == null || email.trim().isEmpty()) {
             throw new CustomExceptions.InvalidRequestException("Email cannot be null or empty");
@@ -108,7 +108,7 @@ public class SignUpService {
         if (userMapper.FindByEmail(email).isPresent()) {
             throw new CustomExceptions.UserAlreadyExistsException("Email already exists");
         } else {
-            return ResponseEntity.ok(email+": Available for use");
+            return email+": Available for use";
         }
     }
 }

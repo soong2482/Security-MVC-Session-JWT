@@ -66,7 +66,7 @@ public class UtilService {
             return originalIP.equals(hashedIP);
         }
 
-    public ResponseEntity<FingerPrintSettings> getFingerprintSettings() {
+    public FingerPrintSettings getFingerprintSettings() {
         String[] fonts = {"14px Arial", "16px Verdana", "12px Times New Roman", "15px Helvetica"};
         String[] texts = {"fingerprint", "uniqueID", "browserTest", "sampleText"};
 
@@ -76,8 +76,7 @@ public class UtilService {
         FingerPrintSettings fp = new FingerPrintSettings();
         fp.setFont(randomFont);
         fp.setSize(randomText);
-
-            return ResponseEntity.ok(fp);
+            return fp;
         }
 
     public String getUserNameFromCookies(HttpServletRequest request) {

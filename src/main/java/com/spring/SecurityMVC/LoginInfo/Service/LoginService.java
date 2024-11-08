@@ -99,7 +99,7 @@ public class LoginService {
         return claims;
 
     }
-    public ResponseEntity<String> authlogin(AuthLoginRequest authLoginRequest,HttpServletRequest request, HttpServletResponse response){
+    public String authlogin(AuthLoginRequest authLoginRequest,HttpServletRequest request, HttpServletResponse response){
         SecurityContextHolder.getContext().getAuthentication();
         String username = "";
         username = utilService.getUserNameFromCookies(request);
@@ -130,16 +130,20 @@ public class LoginService {
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
-        return ResponseEntity.ok("Token and Session Refreshed Successful");
+        return "Token and Session Refreshed Successful";
     }
 
 
 
-    public ResponseEntity<String> login(LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
+    public String login(LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
         if (loginRequest == null || loginRequest.getUsername() == null || loginRequest.getPassword() == null || loginRequest.getFingerprint()==null) {
             throw new CustomExceptions.InvalidRequestException("Invalid request: Login data is missing.");
         }
-
+        HttpSession session = request.getSession(false);
+        if(session!=null){
+            request.getSession().invalidate();
+            SecurityContextHolder.clearContext();
+        }
         Authentication authenticationRequest = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
 
         Authentication authenticationResponse = this.authenticationManager.authenticate(authenticationRequest);
@@ -151,7 +155,6 @@ public class LoginService {
         List<String> roles = authenticationResponse.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
-
         sessionservice.createNewSession(request, username, roles);
         String accessToken = jwtService.generateAccessToken(username, roles);
         String refreshToken = jwtService.generateRefreshToken(username);
@@ -178,13 +181,13 @@ public class LoginService {
         String ip = utilService.getClientIP(request);
         if (!utilService.compareHash(username, ip)) {
             userMapper.UpdateIP(username, ip);
-            return ResponseEntity.ok("IP changed for user: " + username);
+            return "IP changed for user: " + username;
         }
-        return ResponseEntity.ok("Login successful");
+        return "Login successful";
 
     }
 
-    public ResponseEntity<String> logout(AuthLogoutRequest authLogoutRequest, HttpServletRequest request, HttpServletResponse response) {
+    public String logout(AuthLogoutRequest authLogoutRequest, HttpServletRequest request, HttpServletResponse response) {
         SecurityContextHolder.getContext().getAuthentication();
         String username = "";
         username = utilService.getUserNameFromCookies(request);
@@ -232,6 +235,6 @@ public class LoginService {
         utilService.DeleteFinger(username);
         SecurityContextHolder.clearContext();
 
-        return ResponseEntity.ok("Logout Successful");
+        return "Logout Successful";
     }
 }

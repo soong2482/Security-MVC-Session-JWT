@@ -53,20 +53,20 @@ public class UtilSecurityService {
             throw new CustomExceptions.TokenException("Access token is Expired");
         }
     }
-
-    private String retrieveAndValidateRefreshToken(String username) throws CustomExceptions.TokenException {
-        String refreshToken = refreshTokenService.getRefreshToken(username);
-        if (StringUtils.isBlank(refreshToken)) {
-            throw new CustomExceptions.TokenException("Refresh token is missing for user: " + username);
-        }
-        return refreshToken;
-    }
-
-    private void validateRefreshToken(String refreshToken, String username) throws CustomExceptions.TokenException {
-        if (!jwtService.validateRefreshToken(refreshToken, username)) {
-            throw new CustomExceptions.TokenException("Invalid refresh token for user: " + username);
-        }
-    }
+//
+//    private String retrieveAndValidateRefreshToken(String username) throws CustomExceptions.TokenException {
+//        String refreshToken = refreshTokenService.getRefreshToken(username);
+//        if (StringUtils.isBlank(refreshToken)) {
+//            throw new CustomExceptions.TokenException("Refresh token is missing for user: " + username);
+//        }
+//        return refreshToken;
+//    }
+//
+//    private void validateRefreshToken(String refreshToken, String username) throws CustomExceptions.TokenException {
+//        if (!jwtService.validateRefreshToken(refreshToken, username)) {
+//            throw new CustomExceptions.TokenException("Invalid refresh token for user: " + username);
+//        }
+//    }
 
     private void validateRolesInToken(String accessToken) throws CustomExceptions.TokenException {
         Claims claims = jwtService.getAllClaimsFromToken(accessToken);

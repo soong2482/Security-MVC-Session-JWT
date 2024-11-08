@@ -69,7 +69,7 @@ public class SessionService {
         }
     }
 
-    public ResponseEntity<String> deleteSessionByUsername(DeleteSessionRequest deleteSessionRequest, HttpServletResponse httpServletResponse) {
+    public String deleteSessionByUsername(DeleteSessionRequest deleteSessionRequest, HttpServletResponse httpServletResponse) {
 
         String username = deleteSessionRequest.getUsername();
         String code = deleteSessionRequest.getCode();
@@ -97,7 +97,7 @@ public class SessionService {
             throw new CustomExceptions.SessionException(username + ": already expired session");
         }
         log.info("Admin:" + adminname + "delete for user session:" + username + "Delete Code:" + code);
-        return ResponseEntity.ok().body(username + ":Delete Success");
+        return username + ":Delete Success";
     }
 
 

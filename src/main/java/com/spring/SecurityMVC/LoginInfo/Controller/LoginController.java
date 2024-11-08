@@ -22,19 +22,23 @@ public class LoginController {
     private final UtilService utilService;
     @PostMapping("${Security.backEndPoint}/Login")
     public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response, HttpServletRequest request) {
-        return loginService.login(loginRequest, response, request);
+        String body = loginService.login(loginRequest, response, request);
+        return ResponseEntity.ok(body);
     }
     @GetMapping("${Security.backEndPoint}/GetFingerSettings")
     public ResponseEntity<FingerPrintSettings> fingersettings(){
-        return utilService.getFingerprintSettings();
+        FingerPrintSettings fingerPrintSettings= utilService.getFingerprintSettings();
+        return ResponseEntity.ok(fingerPrintSettings);
     }
     @PostMapping("${Security.backEndPoint}/AuthLogin")
     public ResponseEntity<String> authlogin(@RequestBody AuthLoginRequest authLoginRequest, HttpServletRequest request, HttpServletResponse response){
-        return loginService.authlogin(authLoginRequest,request,response);
+        String body = loginService.authlogin(authLoginRequest,request,response);
+        return ResponseEntity.ok(body);
     }
     @PostMapping("${Security.backEndPoint}/Logout")
     public ResponseEntity<String> logout(@RequestBody AuthLogoutRequest authLogoutRequest, HttpServletRequest request, HttpServletResponse response) {
-        return loginService.logout(authLogoutRequest,request,response);
+        String body = loginService.logout(authLogoutRequest,request,response);
+        return ResponseEntity.ok(body);
     }
 
 
