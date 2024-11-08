@@ -32,15 +32,18 @@
     </select>
 
     <insert id="insertUser" parameterType="com.spring.SecurityMVC.SignUpInfo.Domain.SignUp">
-        INSERT INTO users (username, password, enabled, email)
-        VALUES (#{username}, #{password}, #{enabled}, #{email});
+        INSERT INTO users (username, password, email)
+        VALUES (#{username}, #{password}, #{email});
     </insert>
 
     <insert id="insertAuthority" parameterType="com.spring.SecurityMVC.SignUpInfo.Domain.SignUp">
-        INSERT INTO authorities (username, authority)
-        VALUES (#{username}, #{authority});
+        INSERT INTO authorities (username, roleid)
+        VALUES (#{username}, #{roleid});
     </insert>
-
+    <insert id="insertEnabled" parameterType="com.spring.SecurityMVC.SignUpInfo.Domain.SignUp">
+        INSERT INTO enabled (username,enabled,ipaddress)
+        VALUES (#{username}, #{enabled}, #{ipaddress});
+    </insert>
     <select id="getUserIP" resultType="java.lang.String">
         SELECT ipaddress FROM enabled WHERE username = #{username}
     </select>

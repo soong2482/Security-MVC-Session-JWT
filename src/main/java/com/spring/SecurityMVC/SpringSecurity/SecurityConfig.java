@@ -74,12 +74,7 @@ public class SecurityConfig {
         return filter;
     }
 
-    @Bean
-    public CustomAuthenticationJwtFilter customAuthenticationJwtFilter(AuthenticationManager authenticationManager) throws Exception{
-        CustomAuthenticationJwtFilter filter = new CustomAuthenticationJwtFilter(customSuccessHandler(),customFailedHandler(),utilSecurityService);
-        filter.setAuthenticationManager(authenticationManager);
-        return  filter;
-    }
+
     @Bean
     public CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter(AuthenticationManager authenticationManager) throws Exception {
         CustomSuperAdminAuthenticationFilter filter = new CustomSuperAdminAuthenticationFilter(customSuccessHandler(), customFailedHandler(),utilSecurityService);
@@ -93,7 +88,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   CustomAuthenticationJwtFilter customAuthenticationJwtFilter,
                                                    CustomUserAuthenticationFilter customUserAuthenticationFilter,
                                                    CustomAdminAuthenticationFilter customAdminAuthenticationFilter,
                                                    CustomSuperAdminAuthenticationFilter customSuperAdminAuthenticationFilter) throws Exception {
@@ -127,7 +121,6 @@ public class SecurityConfig {
         );
 
         // 커스텀 필터 추가
-        http.addFilterBefore(customAuthenticationJwtFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customUserAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(customSuperAdminAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

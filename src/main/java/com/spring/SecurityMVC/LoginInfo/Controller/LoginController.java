@@ -36,9 +36,6 @@ public class LoginController {
     public ResponseEntity<String> logout(@RequestBody AuthLogoutRequest authLogoutRequest, HttpServletRequest request, HttpServletResponse response) {
         return loginService.logout(authLogoutRequest,request,response);
     }
-    @PostMapping("${Security.backEndPoint}/DeleteSession")
-    public ResponseEntity<String> deleteSession(@RequestBody UsernameRequest usernameRequest, HttpServletResponse response) {
-        return sessionService.deleteSessionByUsername(usernameRequest,response);
-    }
+
 
 }

@@ -106,8 +106,9 @@ public class LoginService {
         if(StringUtils.isBlank(username)){
             throw new CustomExceptions.MissingRequestBodyException("Username is missing");
         }
-        HttpSession session = request.getSession(false);
+
         String accessToken = getAccessToken(request);
+        HttpSession session = request.getSession(false);
         Claims claims = validationAccessToken(accessToken,session,authLoginRequest.getFingerprint(),username);
         List<String> roles = jwtService.getRolesFromToken(claims);
 
@@ -154,7 +155,6 @@ public class LoginService {
         sessionservice.createNewSession(request, username, roles);
         String accessToken = jwtService.generateAccessToken(username, roles);
         String refreshToken = jwtService.generateRefreshToken(username);
-
         refreshTokenService.saveRefreshToken(username, refreshToken);
 
         redisTemplate.opsForValue().set("finger-print:"+username, loginRequest.getFingerprint(), 60 * 60 * 24 * 7, TimeUnit.SECONDS);
@@ -191,7 +191,7 @@ public class LoginService {
         if(StringUtils.isBlank(username)){
             throw new CustomExceptions.MissingRequestBodyException("Username is missing");
         }
-        System.out.println(username);//다시 ret
+
         HttpSession session = request.getSession(false);
         String accessToken = getAccessToken(request);
         validationAccessToken(accessToken,session,authLogoutRequest.getFingerprint(),username);
@@ -218,7 +218,18 @@ public class LoginService {
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, userNameCookie.toString());
         refreshTokenService.deleteRefreshToken(username);
-        sessionservice.invalidateSession(session, username);
+        if(session!=null) {
+            sessionservice.invalidateSession(session, username);
+        }else{
+            ResponseCookie sessionCookie = ResponseCookie.from("SESSION", null)
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(0)
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, sessionCookie.toString());
+        }
+        utilService.DeleteFinger(username);
         SecurityContextHolder.clearContext();
 
         return ResponseEntity.ok("Logout Successful");

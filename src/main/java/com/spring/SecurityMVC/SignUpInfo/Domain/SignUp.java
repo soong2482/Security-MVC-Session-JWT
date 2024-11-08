@@ -7,7 +7,7 @@ public class SignUp {
     private String username;
     private String password;
     private String email;
-    private String emailCode;
     private Boolean enabled;
-    private String authority;
+    private String roleid;
+    private String ipaddress;
 }

@@ -6,6 +6,7 @@ import com.spring.SecurityMVC.LoginInfo.Service.SessionService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -27,26 +28,6 @@ public class CustomFailedHandler implements AuthenticationFailureHandler {
 
         log.warn("Authentication failed from IP: {} on API: {} with exception: {}", clientIP, requestURI, errorMessage);
 
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("Refresh-Token", null)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-        ResponseCookie accessTokenCookie = ResponseCookie.from("Access-Token", null)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-        ResponseCookie userNameCookie = ResponseCookie.from("username",null) .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, userNameCookie.toString());
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().write(exception.getMessage());
     }

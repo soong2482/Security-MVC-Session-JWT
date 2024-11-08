@@ -18,6 +18,7 @@ public interface UserMapper{
     Optional<String> FindByEmail(String email);
     void insertAuthority(SignUp signUp);
     void insertUser(SignUp signUp);
+    void insertEnabled(SignUp signUp);
     List<String> FindByRoles(String username);
     Optional<String> getUserIP(String username);
     void UpdateIP(String username,String ip);

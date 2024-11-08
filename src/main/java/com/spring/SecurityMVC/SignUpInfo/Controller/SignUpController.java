@@ -1,6 +1,6 @@
 package com.spring.SecurityMVC.SignUpInfo.Controller;
 
-import com.spring.SecurityMVC.SignUpInfo.Domain.SignUp;
+import com.spring.SecurityMVC.SignUpInfo.Domain.*;
 import com.spring.SecurityMVC.SignUpInfo.Service.SignUpService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,25 +18,25 @@ public class SignUpController {
     private final SignUpService signUpService;
 
     @PostMapping("${Security.backEndPoint}/SignUp")
-    public ResponseEntity<Void> SignUp(@RequestBody(required = false)SignUp signUp, HttpServletResponse response, HttpServletRequest request){
+    public ResponseEntity<String> SignUp(@RequestBody(required = false)SignUp signUp, HttpServletResponse response, HttpServletRequest request){
         return signUpService.SignUp(signUp,request,response);
     }
 
     @PostMapping("${Security.backEndPoint}/PostEmail")
-    public ResponseEntity<Void> PostEmail(@RequestBody Map<String, String> payload,HttpServletRequest request,HttpServletResponse response){
-        return signUpService.PostEmail(payload.get("Email"),request,response);
+    public ResponseEntity<String> PostEmail(@RequestBody PostEmail postEmail, HttpServletRequest request, HttpServletResponse response){
+        return signUpService.PostEmail(postEmail,request,response);
     }
     @PostMapping("${Security.backEndPoint}/CheckEmailCode")
-    public ResponseEntity<Void> CheckEmailCode(@RequestBody Map<String, String> payload, HttpServletRequest request, HttpServletResponse response){
-        return signUpService.CheckEmailCode(payload.get("Email"),payload.get("EmailCode"),request,response);
+    public ResponseEntity<String> CheckEmailCode(@RequestBody CheckEmailCode checkEmailCode, HttpServletRequest request, HttpServletResponse response){
+        return signUpService.CheckEmailCode(checkEmailCode,request,response);
     }
 
     @PostMapping("${Security.backEndPoint}/ValidateUserName")
-    public ResponseEntity<Void> ValidateUserName(@RequestBody Map<String, String> payload, HttpServletRequest request, HttpServletResponse response) {
-        return signUpService.ValidateUserName(payload.get("UserName"), request, response);
+    public ResponseEntity<String> ValidateUserName(@RequestBody ValidateUserName validateUserName, HttpServletRequest request, HttpServletResponse response) {
+        return signUpService.ValidateUserName(validateUserName, request, response);
     }
     @PostMapping("${Security.backEndPoint}/ValidateEmail")
-    public ResponseEntity<Void> ValidateEmail(@RequestBody Map<String, String> payload,HttpServletRequest request,HttpServletResponse response){
-        return signUpService.ValidateEmail(payload.get("Email"),request,response);
+    public ResponseEntity<String> ValidateEmail(@RequestBody ValidateEmail validateEmail, HttpServletRequest request, HttpServletResponse response){
+        return signUpService.ValidateEmail(validateEmail,request,response);
     }
 }
