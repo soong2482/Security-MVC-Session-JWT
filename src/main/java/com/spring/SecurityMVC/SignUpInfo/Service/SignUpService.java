@@ -41,6 +41,7 @@ public class SignUpService {
         String encryptedPassword = passwordEncoder.encode(signUp.getPassword());
         signUp.setPassword(encryptedPassword);
         signUp.setIpaddress(utilService.getClientIP(request));
+
         signUp.setEnabled(true);
         try {
             userMapper.insertUser(signUp);
@@ -58,6 +59,7 @@ public class SignUpService {
 
     public String PostEmail(PostEmail postEmail, HttpServletRequest request, HttpServletResponse response) {
         String email = postEmail.getEmail();
+        System.out.println(email);
         if (email == null || email.trim().isEmpty()) {
             throw new CustomExceptions.InvalidRequestException("Email cannot be null or empty");
         }

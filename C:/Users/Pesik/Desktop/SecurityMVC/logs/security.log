@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [2024-11-08 10:19:24.463|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
 [2024-11-08 10:19:24.464|DEBUG|main|c.s.S.S.C.CustomUserAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customUserAuthenticationFilter' configured for use
 [2024-11-08 10:19:24.465|DEBUG|main|c.s.S.S.C.CustomAuthenticationJwtFilter:GenericFilterBean.java:init:240]	Filter 'customAuthenticationJwtFilter' configured for use
@@ -25,3 +26,10 @@
 [2024-11-08 13:45:16.295|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
 [2024-11-08 13:45:16.296|DEBUG|main|c.s.S.S.C.CustomUserAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customUserAuthenticationFilter' configured for use
 [2024-11-08 13:45:16.297|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+=======
+[2025-03-31 14:46:25.253|DEBUG|main|c.s.S.S.C.CustomAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customAdminAuthenticationFilter' configured for use
+[2025-03-31 14:46:25.255|DEBUG|main|c.s.S.S.C.CustomUserAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customUserAuthenticationFilter' configured for use
+[2025-03-31 14:46:25.257|DEBUG|main|c.s.S.S.C.CustomSuperAdminAuthenticationFilter:GenericFilterBean.java:init:240]	Filter 'customSuperAdminAuthenticationFilter' configured for use
+[2025-03-31 14:56:21.470|WARN |http-nio-8080-exec-5|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:29]	Authentication failed from IP: 0:0:0:0:0:0:0:1 on API: /Security/Admin/Check with exception: User does not have ADMIN privileges
+[2025-03-31 14:56:24.693|WARN |http-nio-8080-exec-6|c.s.S.S.C.CustomFailedHandler:CustomFailedHandler.java:onAuthenticationFailure:29]	Authentication failed from IP: 0:0:0:0:0:0:0:1 on API: /Security/SuperAdmin/Check with exception: User does not have SUPER_ADMIN privileges
+>>>>>>> ec2857b (Secure Base commit)
